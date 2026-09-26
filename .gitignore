@@ -2,10 +2,16 @@
 *.zip
 /temp
 /build
-test*
+test.apk
+test-*.apk
 /logs
 build.md
 cmpr
 *-temporary-files
 __pycache__
 temp_config.toml
+node_modules/
+dist/
+scratch/
+pages/
+build-state.json

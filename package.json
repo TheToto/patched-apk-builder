@@ -1,0 +1,39 @@
+{
+  "name": "revanced-magisk-module",
+  "version": "1.0.0",
+  "description": "[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/rvc_magisk) [![CI](https://github.com/j-hc/revanced-magisk-module/actions/workflows/ci.yml/badge.svg?event=schedule)](https://github.com/j-hc/revanced-magisk-module/actions/workflows/ci.yml)",
+  "type": "module",
+  "bin": {
+    "revanced-builder": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "check-updates": "tsx src/index.ts check",
+    "build-apps": "tsx src/index.ts build",
+    "gen-web": "tsx src/index.ts web",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "bugs": {
+    "url": "https://github.com/TheToto/revanced-magisk-module/issues"
+  },
+  "homepage": "https://github.com/TheToto/revanced-magisk-module#readme",
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "archiver": "^8.0.0",
+    "cheerio": "^1.2.0",
+    "commander": "^15.0.0",
+    "picocolors": "^1.1.1",
+    "smol-toml": "^1.9.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/archiver": "^8.0.0",
+    "@types/node": "^26.6.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}

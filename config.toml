@@ -104,6 +104,8 @@ enabled = true
 patches-source = "hoo-dles/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "hoo-dles"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/mellowdrop-studio/niagara-launcher/"
+uptodown-dlurl = "https://niagara-launcher.en.uptodown.com/android"
 arch = "arm64-v8a"
 build-mode = "apk"
 info = "Note: You may encounter this bug: https://github.com/hoo-dles/morphe-patches/issues/429"
@@ -113,6 +115,8 @@ enabled = true
 patches-source = "hoo-dles/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "hoo-dles"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/proton-technologies-ag/protonvpn-secure-and-free-vpn/"
+uptodown-dlurl = "https://protonvpn.en.uptodown.com/android"
 arch = "arm64-v8a"
 build-mode = "apk"
 
@@ -125,3 +129,14 @@ build-mode = "apk"
 #discord-dlurl = "auto"
 #arch = "arm64-v8a"
 #build-mode = "apk"
+
+[Gboard]
+enabled = true
+app-name = "Gboard"
+patches-source = "jasonwu1994/Gboard-patches"
+cli-source = "MorpheApp/morphe-cli"
+rv-brand = "jasonwu1994"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/gboard"
+arch = "arm64-v8a"
+build-mode = "both"
+

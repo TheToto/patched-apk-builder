@@ -2,44 +2,160 @@ name: Build Modules
 on:
   workflow_call:
     inputs:
-      from_ci:
-        type: boolean
+      matrix_json:
+        type: string
         required: false
-        default: true
+        default: ''
 
   workflow_dispatch:
+    inputs:
+      target_app:
+        description: 'Specific app slug to build (leave empty for all)'
+        required: false
+        default: ''
 
 jobs:
-  run:
+  # When triggered via CI with matrix
+  build-matrix:
+    if: ${{ inputs.matrix_json != '' && inputs.matrix_json != '{"include":[]}' }}
     permissions: write-all
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.matrix_json) }}
     steps:
-      - uses: actions/setup-java@v5
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "21"
 
-      - name: Install ImageMagick
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: true
 
-      - name: Update config
-        if: ${{ inputs.from_ci }}
+      - name: Install Dependencies & Build CLI
         run: |
-          if git checkout origin/update build.md; then
-            UPDATE_CFG=$(./build.sh config.toml --config-update)
-            if [ "$UPDATE_CFG" ]; then
-              echo "$UPDATE_CFG" > config.json
-            fi
+          npm ci
+          npm run build
+
+      - name: Retrieve State from Update Branch
+        run: |
+          git checkout origin/update build-state.json build.md 2>/dev/null || true
+
+      - name: Build Target App
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node dist/index.js build -a "${{ matrix.slug }}" --arch "${{ matrix.arch }}" --app-version "${{ matrix.version }}"
+
+      - name: Upload Built Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.slug }}-${{ matrix.arch }}
+          path: |
+            build/*.apk
+            build/*.zip
+            build/*.patches.json
+            build/*.png
+            build-state.json
+
+  # When triggered manually without matrix
+  build-direct:
+    if: ${{ inputs.matrix_json == '' || inputs.matrix_json == '{"include":[]}' }}
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Dependencies & Build CLI
+        run: |
+          npm ci
+          npm run build
+
+      - name: Retrieve State from Update Branch
+        run: |
+          git checkout origin/update build-state.json build.md 2>/dev/null || true
+
+      - name: Build Apps
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "${{ inputs.target_app }}" ]; then
+            node dist/index.js build -a "${{ inputs.target_app }}"
+          else
+            node dist/index.js build
           fi
 
-      - name: Get next version code
-        id: next_ver_code
+      - name: Upload Built Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-direct
+          path: |
+            build/*.apk
+            build/*.zip
+            build/*.patches.json
+            build/*.png
+            build-state.json
+
+  # Deployment, Releases, Web and Notifications
+  deploy:
+    needs: [build-matrix, build-direct]
+    if: always() && (needs.build-matrix.result == 'success' || needs.build-direct.result == 'success')
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Dependencies & Build CLI
+        run: |
+          npm ci
+          npm run build
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+
+      - name: Consolidate Artifacts
+        run: |
+          mkdir -p build
+          find downloaded-artifacts -type f \( -name "*.apk" -o -name "*.zip" -o -name "*.patches.json" -o -name "*.png" \) -exec cp -f {} build/ \;
+          find downloaded-artifacts -type f -name "build-state.json" -exec cp -f {} . \;
+          ls -la build/
+
+      - name: Determine Next Version Tag
+        id: next_ver
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -47,128 +163,51 @@ jobs:
           if [ -z "$TAG" ]; then TAG=0; fi
           echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
 
-      - name: Build modules/APKs
-        run: if [ -f "config.json" ]; then ./build.sh config.json; else ./build.sh config.toml; fi
+      - name: Create or Update GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: $GITHUB_REPOSITORY
-          NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
-
-      - name: Get output
-        id: get_output
+          TAG: ${{ steps.next_ver.outputs.NEXT_VER_CODE }}
         run: |
-          DELIM="$(openssl rand -hex 8)"
-          echo "BUILD_LOG<<${DELIM}" >> "$GITHUB_OUTPUT"
-          cat build.md >> "$GITHUB_OUTPUT"
-          echo "${DELIM}" >> "$GITHUB_OUTPUT"
-          cp -f build.md build.tmp
-      
-      - name: Upload release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
-          BODY: ${{ steps.get_output.outputs.BUILD_LOG }}
-        run: |
-          ls -lh ./build/*
           shopt -s nullglob
-          files=(./build/*.apk ./build/*.zip)
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "Release" --notes "$BODY"
-            gh release upload "$TAG" "${files[@]}" --clobber
-          else
-            gh release create "$TAG" "${files[@]}" --title "Release" --notes "$BODY"
+          files=(build/*.apk build/*.zip)
+          if [ ${#files[@]} -gt 0 ]; then
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              gh release upload "$TAG" "${files[@]}" --clobber
+            else
+              gh release create "$TAG" "${files[@]}" --title "Release v${TAG}" --notes "Automated release build v${TAG}"
+            fi
           fi
 
-      - name: Generate GitHub Pages
+      - name: Generate Static Web Pages
         env:
-          NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+          NEXT_VER_CODE: ${{ steps.next_ver.outputs.NEXT_VER_CODE }}
         run: |
-          ./scripts/gen_index.py
-          if [ -d "build" ] && [ "$(ls -A build)" ]; then
-            ./scripts/gen_app_pages.py
-          fi
+          node dist/index.js web --out /tmp/pages
 
-      - name: Update modules changelog and update json
-        id: update_config
-        run: |
-          git checkout -f update || git switch --discard-changes --orphan update
-          cp -f build.tmp build.md
-          get_update_json() {
-            echo "{
-            \"version\": \"$1\",
-            \"versionCode\": ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }},
-            \"zipUrl\": \"$2\",
-            \"changelog\": \"https://raw.githubusercontent.com/$GITHUB_REPOSITORY/update/build.md\"
-          }"
-          }
-
-          cd build || { echo "build folder not found"; exit 1; }
-          for OUTPUT in *module*.zip; do
-            [ "$OUTPUT" = "*module*.zip" ] && continue
-            ZIP_S=$(unzip -p "$OUTPUT" module.prop)
-            if ! UPDATE_JSON=$(echo "$ZIP_S" | grep updateJson); then continue; fi
-            UPDATE_JSON="${UPDATE_JSON##*/}"
-            VER=$(echo "$ZIP_S" | grep version=)
-            VER="${VER##*=}"
-            DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}/${OUTPUT}"
-            get_update_json "$VER" "$DLURL" >"../$UPDATE_JSON"
-          done
-          cd ..
-
-          find . -name "*-update.json" | grep . || : >dummy-update.json
-          
-          # Copy generated pages to the update branch
-          cp -a /tmp/pages/* . 2>/dev/null || true
-
-      - name: Commit pages and module json changes
+      - name: Commit to Update Branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      
-          shopt -s nullglob
-          git add build.md *-update.json *.html *.png *.css
-      
+
+          git checkout -f update || git switch --discard-changes --orphan update
+
+          cp -a /tmp/pages/* . 2>/dev/null || true
+          [ -f "build-state.json" ] && git add build-state.json
+          [ -f "build.md" ] && git add build.md
+
+          git add *.html *.png *.css CNAME *-update.json 2>/dev/null || true
+
           if ! git diff --cached --quiet; then
-            git commit -m "Bump version ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}"
+            git commit -m "Deploy release v${{ steps.next_ver.outputs.NEXT_VER_CODE }}"
             git push origin HEAD:update
           else
-            echo "no changes!"
+            echo "No changes to commit to update branch"
           fi
 
-      - name: Report to Telegram
+      - name: Send Telegram Notification
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          NEXT_VER_CODE: ${{ steps.next_ver.outputs.NEXT_VER_CODE }}
         if: env.TG_TOKEN != null
         run: |
-          cd build || { echo "build folder not found"; exit 1; }
-
-          TG_CHAT="@rvc_magisk"
-          NL=$'\n'
-          APKS=""
-          MODULES=""
-          for OUTPUT in *; do
-            DL_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}/${OUTPUT}"
-            if [[ $OUTPUT = *.apk ]]; then
-              APKS+="${NL}📦[${OUTPUT}](${DL_URL})"
-            elif [[ $OUTPUT = *.zip ]]; then
-              MODULES+="${NL}📦[${OUTPUT}](${DL_URL})"
-            fi
-          done
-          if [ -n "$MODULES" ]; then
-            MODULES="Modules:${NL}${MODULES#"$NL"}"
-            if [ -n "$APKS" ]; then MODULES+=${NL}${NL}; fi
-          fi
-          if [ -n "$APKS" ]; then APKS="APKs:${NL}${APKS#"$NL"}"; fi
-
-          BODY="$(cat ../build.md)"
-          MSG="*New build!*
-
-          ${BODY}
-
-          *▼ Download Links:*
-          ${MODULES}${APKS}
-          "
-          echo "'$MSG'"
-          MSG=${MSG:0:9450}
-          POST="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
-          curl -X POST --data-urlencode "parse_mode=Markdown" --data-urlencode "disable_web_page_preview=true" --data-urlencode "text=${MSG}" --data-urlencode "chat_id=${TG_CHAT}" "$POST"
+          node dist/index.js notify

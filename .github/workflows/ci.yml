@@ -1,6 +1,12 @@
 name: CI
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force rebuild of all apps'
+        type: boolean
+        required: false
+        default: false
   schedule:
     - cron: "0 16 * * *"
 
@@ -8,48 +14,59 @@ jobs:
   check:
     permissions: write-all
     runs-on: ubuntu-latest
+    outputs:
+      SHOULD_BUILD: ${{ steps.check_step.outputs.SHOULD_BUILD }}
+      MATRIX_JSON: ${{ steps.check_step.outputs.MATRIX_JSON }}
     steps:
-      - uses: actions/setup-java@v5
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "21"
 
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Should build?
-        id: should_build
-        shell: bash
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Retrieve State from Update Branch
+        run: |
+          git checkout origin/update build-state.json build.md 2>/dev/null || echo "No previous state found on update branch"
+
+      - name: Check for Updates
+        id: check_step
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! git checkout origin/update build.md; then
-            echo "first time building!"
-            echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.force }}" = "true" ]; then
+            node dist/index.js check --force
           else
-            UPDATE_CFG=$(./build.sh config.toml --config-update)
-            if [ "$UPDATE_CFG" ]; then
-              echo "'$UPDATE_CFG'"
-              echo "SHOULD_BUILD=1" >> $GITHUB_OUTPUT
-            else
-              echo "SHOULD_BUILD=0" >> $GITHUB_OUTPUT
-            fi
+            node dist/index.js check
           fi
 
       - name: Clear older runs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh run list -L400 --json databaseId -q '.[].databaseId' | tail -n+10 | xargs -IID gh api "repos/$GITHUB_REPOSITORY/actions/runs/ID" -X DELETE || :
-
-    outputs:
-      SHOULD_BUILD: ${{ steps.should_build.outputs.SHOULD_BUILD }}
+          gh run list -L400 --json databaseId -q '.[].databaseId' | tail -n+10 | xargs -IID gh api "repos/$GITHUB_REPOSITORY/actions/runs/ID" -X DELETE 2>/dev/null || true
 
   build:
     permissions: write-all
     needs: check
+    if: ${{ needs.check.outputs.SHOULD_BUILD == '1' }}
     uses: ./.github/workflows/build.yml
-    if: ${{ needs.check.outputs.SHOULD_BUILD == 1 }}
+    with:
+      matrix_json: ${{ needs.check.outputs.MATRIX_JSON }}
     secrets: inherit
