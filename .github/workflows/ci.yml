@@ -18,6 +18,11 @@ jobs:
       SHOULD_BUILD: ${{ steps.check_step.outputs.SHOULD_BUILD }}
       MATRIX_JSON: ${{ steps.check_step.outputs.MATRIX_JSON }}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -29,11 +34,6 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install Dependencies
         run: npm ci
@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh run list -L400 --json databaseId -q '.[].databaseId' | tail -n+10 | xargs -IID gh api "repos/$GITHUB_REPOSITORY/actions/runs/ID" -X DELETE 2>/dev/null || true
+          gh run list -L400 --json databaseId -q '.[].databaseId' | tail -n+10 | xargs -r -IID gh api "repos/$GITHUB_REPOSITORY/actions/runs/ID" -X DELETE 2>/dev/null || true
 
   build:
     permissions: write-all

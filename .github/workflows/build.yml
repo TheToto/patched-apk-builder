@@ -24,6 +24,11 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(inputs.matrix_json) }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -35,11 +40,6 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install Dependencies & Build CLI
         run: |
@@ -66,6 +66,7 @@ jobs:
             build/*.patches.json
             build/*.png
             build-state.json
+            build.md
 
   # When triggered manually without matrix
   build-direct:
@@ -73,6 +74,11 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -84,11 +90,6 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install Dependencies & Build CLI
         run: |
@@ -119,6 +120,7 @@ jobs:
             build/*.patches.json
             build/*.png
             build-state.json
+            build.md
 
   # Deployment, Releases, Web and Notifications
   deploy:
@@ -127,15 +129,16 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
       - name: Install Dependencies & Build CLI
         run: |
@@ -151,7 +154,28 @@ jobs:
         run: |
           mkdir -p build
           find downloaded-artifacts -type f \( -name "*.apk" -o -name "*.zip" -o -name "*.patches.json" -o -name "*.png" \) -exec cp -f {} build/ \;
-          find downloaded-artifacts -type f -name "build-state.json" -exec cp -f {} . \;
+          node -e "
+          const fs = require('fs');
+          let merged = fs.existsSync('build-state.json') ? JSON.parse(fs.readFileSync('build-state.json')) : { apps: {}, lastVersionCode: 0 };
+          function walk(dir) {
+            for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+              const p = dir + '/' + f.name;
+              if (f.isDirectory()) walk(p);
+              else if (f.name === 'build-state.json') {
+                try {
+                  const s = JSON.parse(fs.readFileSync(p));
+                  merged.apps = { ...merged.apps, ...s.apps };
+                  if (s.lastVersionCode > merged.lastVersionCode) merged.lastVersionCode = s.lastVersionCode;
+                } catch {}
+              }
+            }
+          }
+          if (fs.existsSync('downloaded-artifacts')) walk('downloaded-artifacts');
+          fs.writeFileSync('build-state.json', JSON.stringify(merged, null, 2));
+          "
+          find downloaded-artifacts -type f -name "build.md" -exec cp -f {} . \;
+          cp -f build-state.json /tmp/build-state.json 2>/dev/null || true
+          cp -f build.md /tmp/build.md 2>/dev/null || true
           ls -la build/
 
       - name: Determine Next Version Tag
@@ -159,7 +183,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG=$(gh release list -L 1 | awk -F '\t' '{print $3}')
+          RAW_TAG=$(gh release list -L 1 | awk -F '\t' '{print $3}')
+          TAG=${RAW_TAG//[^0-9]/}
           if [ -z "$TAG" ]; then TAG=0; fi
           echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
 
@@ -192,6 +217,8 @@ jobs:
           git checkout -f update || git switch --discard-changes --orphan update
 
           cp -a /tmp/pages/* . 2>/dev/null || true
+          cp -f /tmp/build-state.json build-state.json 2>/dev/null || true
+          cp -f /tmp/build.md build.md 2>/dev/null || true
           [ -f "build-state.json" ] && git add build-state.json
           [ -f "build.md" ] && git add build.md
 

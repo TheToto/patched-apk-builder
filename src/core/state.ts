@@ -128,24 +128,33 @@ export class StateManager {
     this.state.updatedAt = new Date().toISOString();
     this.state.lastVersionCode = parseInt(this.ctx.nextVerCode, 10) || this.state.lastVersionCode;
     fs.writeFileSync(this.stateFilePath, JSON.stringify(this.state, null, 2), 'utf-8');
+    this.exportBuildMd();
   }
 
-  public exportBuildMd(builtList: Array<{ name: string; version: string; patchesTag?: string }>): void {
+  public exportBuildMd(builtList?: Array<{ name: string; version: string; patchesTag?: string }>): void {
     const buildMdPath = path.join(this.ctx.rootDir, 'build.md');
     let content = '';
-    for (const item of builtList) {
-      content += `${item.name}: ${item.version}  \n`;
+    const patchTagsSeen = new Set<string>();
+
+    if (builtList && builtList.length > 0) {
+      for (const item of builtList) {
+        content += `${item.name}: ${item.version}  \n`;
+        if (item.patchesTag) patchTagsSeen.add(item.patchesTag);
+      }
+    } else {
+      for (const [key, app] of Object.entries(this.state.apps)) {
+        const slug = key.split(':')[0];
+        content += `${slug}: ${app.version}  \n`;
+        if (app.patchesTag) patchTagsSeen.add(app.patchesTag);
+      }
     }
+
     content += '\nInstall [Microg](https://github.com/MorpheApp/MicroG-RE/) for non-root YouTube and YT Music APKs  \n';
     content += 'Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store  \n\n';
-    content += `[revanced-magisk-module](https://${this.ctx.githubRepository})  \n\n`;
+    content += `[revanced-magisk-module](https://github.com/${this.ctx.githubRepository})  \n\n`;
 
-    const patchTagsSeen = new Set<string>();
-    for (const item of builtList) {
-      if (item.patchesTag && !patchTagsSeen.has(item.patchesTag)) {
-        patchTagsSeen.add(item.patchesTag);
-        content += `Patches: ${item.patchesTag}  \n`;
-      }
+    for (const tag of patchTagsSeen) {
+      content += `Patches: ${tag}  \n`;
     }
 
     fs.writeFileSync(buildMdPath, content, 'utf-8');
