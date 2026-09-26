@@ -72,7 +72,7 @@ while read -r table_name; do
 		idx=$((idx - 1))
 	fi
 
-	declare -A app_args
+	declare -A app_args=()
 	patches_src=$(toml_get "$t" patches-source) || patches_src=$DEF_PATCHES_SRC
 	patches_ver=$(toml_get "$t" patches-version) || patches_ver=$DEF_PATCHES_VER
 	cli_src=$(toml_get "$t" cli-source) || cli_src=$DEF_CLI_SRC
@@ -109,7 +109,8 @@ while read -r table_name; do
 	fi
 	if ! app_args[rv_brand]=$(toml_get "$t" rv-brand); then
 		app_args[rv_brand]=${DEF_RV_BRAND:-"${patches_src%%/*}"}
-	fi
+	app_args[enable_update_checks]=$(toml_get "$t" enable-update-checks) && vtf "${app_args[enable_update_checks]}" "enable-update-checks" || app_args[enable_update_checks]="false"
+
 	app_args[excluded_patches]=$(toml_get "$t" excluded-patches) || app_args[excluded_patches]=""
 	if [ -n "${app_args[excluded_patches]}" ] && [[ ${app_args[excluded_patches]} != *'"'* ]]; then abort "patch names inside excluded-patches must be quoted"; fi
 	app_args[included_patches]=$(toml_get "$t" included-patches) || app_args[included_patches]=""

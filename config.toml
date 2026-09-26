@@ -15,7 +15,7 @@ patches-source = "MorpheApp/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "Morphe"
 build-mode = "both"
-uptodown-dlurl = "https://youtube.en.uptodown.com/android"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.youtube"
 excluded-patches = "'Custom branding'"
 
@@ -27,7 +27,7 @@ cli-source = "MorpheApp/morphe-cli"
 rv-brand = "Morphe"
 build-mode = "both"
 version = "experimental"
-uptodown-dlurl = "https://youtube.en.uptodown.com/android"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.youtube"
 excluded-patches = "'Custom branding'"
 
@@ -38,8 +38,8 @@ patches-source = "MorpheApp/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "Morphe"
 build-mode = "both"
-arch = "arm64-v8a"
-uptodown-dlurl = "https://youtube-music.en.uptodown.com/android"
+arch = "both"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/youtube-music"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.apps.youtube.music"
 excluded-patches = "'Custom branding'"
 
@@ -50,8 +50,8 @@ rv-brand = "Morphe"
 build-mode = "both"
 patches-source = "MorpheApp/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/redditinc/reddit/"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.reddit.frontpage"
-uptodown-dlurl = "https://reddit-official-app.en.uptodown.com/android"
 dpi = "120-640dpi"
 
 [Twitter]
@@ -68,19 +68,18 @@ include-stock = "split"
 enabled = false
 build-mode = "both"
 arch = "both"
-uptodown-dlurl = "https://google-photos.en.uptodown.com/android"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/photos/"
 archive-dlurl = "https://archive.org/download/jhc-apks/apks/com.google.android.apps.photos"
 
 [Twitch]
 enabled = false
-uptodown-dlurl = "https://twitch.en.uptodown.com/android"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/twitch-interactive-inc/twitch/"
 
 [Facebook]
 enabled = false
 patches-source = "RookieEnough/De-Vanced"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "DeVanced"
-uptodown-dlurl = "https://facebook.en.uptodown.com/android"
 arch = "arm64-v8a"
 build-mode = "apk"
 
@@ -89,7 +88,6 @@ enabled = false
 patches-source = "RookieEnough/De-Vanced"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "DeVanced"
-uptodown-dlurl = "https://facebook-messenger.en.uptodown.com/android"
 arch = "arm64-v8a"
 build-mode = "apk"
 
@@ -98,7 +96,6 @@ enabled = false
 patches-source = "crimera/piko"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "Piko"
-uptodown-dlurl = "https://instagram.en.uptodown.com/android"
 arch = "arm64-v8a"
 build-mode = "apk"
 
@@ -107,7 +104,6 @@ enabled = true
 patches-source = "hoo-dles/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "hoo-dles"
-uptodown-dlurl = "https://niagara-launcher.en.uptodown.com/android"
 arch = "arm64-v8a"
 build-mode = "apk"
 info = "Note: You may encounter this bug: https://github.com/hoo-dles/morphe-patches/issues/429"
@@ -117,7 +113,6 @@ enabled = true
 patches-source = "hoo-dles/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "hoo-dles"
-uptodown-dlurl = "https://protonvpn.en.uptodown.com/android"
 arch = "arm64-v8a"
 build-mode = "apk"
 
