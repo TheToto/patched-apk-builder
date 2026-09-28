@@ -55,8 +55,21 @@ export class ChangeDetector {
       let patchInfo = patchReleaseCache.get(`${app.patchesSource}:${app.patchesVersion}`);
       if (!patchInfo) {
         try {
-          patchInfo = await this.fetcher.getPatchesBundle(app.patchesSource, app.patchesVersion);
-          patchReleaseCache.set(`${app.patchesSource}:${app.patchesVersion}`, patchInfo);
+          if (app.patchMethod === 'lspatch') {
+            if (app.xposedModuleAsset) {
+              patchInfo = await this.fetcher.getAssetByPattern(
+                app.patchesSource,
+                app.xposedModuleAsset,
+                app.patchesVersion
+              );
+              patchReleaseCache.set(`${app.patchesSource}:${app.patchesVersion}`, patchInfo);
+            } else {
+              throw new Error(`xposed-module-asset required for LSPatch in ${app.name}`);
+            }
+          } else {
+            patchInfo = await this.fetcher.getPatchesBundle(app.patchesSource, app.patchesVersion);
+            patchReleaseCache.set(`${app.patchesSource}:${app.patchesVersion}`, patchInfo);
+          }
         } catch (err: any) {
           this.ctx.warn(`Failed to fetch patches for ${app.name}: ${err.message}`);
           continue;

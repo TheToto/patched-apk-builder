@@ -49,8 +49,8 @@ export class BuildOrchestrator {
 
     await this.toolManager.ensureCmprBinaries();
 
-    // 1. Fetch patches bundle
-    const patchRelease = await this.fetcher.getPatchesBundle(app.patchesSource, app.patchesVersion);
+    // 1. Fetch patches / module bundle & tools
+    let patchRelease: { tag: string; filePath: string };
     let cliJar = '';
     let cliTag = 'lspatch';
     let lspatchJar = '';
@@ -67,7 +67,12 @@ export class BuildOrchestrator {
         app.patchesVersion
       );
       xposedModuleApk = modAsset.filePath;
+      patchRelease = {
+        tag: modAsset.tag,
+        filePath: modAsset.filePath
+      };
     } else {
+      patchRelease = await this.fetcher.getPatchesBundle(app.patchesSource, app.patchesVersion);
       const cliRelease = await this.fetcher.getCliJar(app.cliSource, app.cliVersion);
       cliJar = cliRelease.filePath;
       cliTag = cliRelease.tag;
