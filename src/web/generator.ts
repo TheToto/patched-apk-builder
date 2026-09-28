@@ -436,6 +436,12 @@ ${appCardsHtml}        </div>
           changelog: `https://raw.githubusercontent.com/${this.ctx.githubRepository}/update/build.md`
         };
         fs.writeFileSync(updateJsonPath, JSON.stringify(updateData, null, 2), 'utf-8');
+
+        // Also generate brand-specific alias if different (e.g. youtube-morphe-update.json) for older setups
+        if (brandSlug && brandSlug !== appSlug) {
+          const brandUpdateJsonPath = path.join(outDir, `${app.slug}-${brandSlug}-update.json`);
+          fs.writeFileSync(brandUpdateJsonPath, JSON.stringify(updateData, null, 2), 'utf-8');
+        }
       }
     }
 

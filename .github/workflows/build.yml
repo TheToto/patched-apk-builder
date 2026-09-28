@@ -15,8 +15,27 @@ on:
         default: ''
 
 jobs:
+  # Determine next version code from latest GitHub release
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      NEXT_VER_CODE: ${{ steps.ver.outputs.NEXT_VER_CODE }}
+    steps:
+      - name: Determine Next Version Code
+        id: ver
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RAW_TAG=$(gh release list -L 1 --json tagName -q '.[0].tagName' 2>/dev/null || true)
+          TAG=${RAW_TAG//[^0-9]/}
+          if [ -z "$TAG" ]; then TAG=0; fi
+          NEXT=$((TAG + 1))
+          echo "Determined next version code: $NEXT"
+          echo "NEXT_VER_CODE=$NEXT" >> $GITHUB_OUTPUT
+
   # When triggered via CI with matrix
   build-matrix:
+    needs: prepare
     if: ${{ inputs.matrix_json != '' && inputs.matrix_json != '{"include":[]}' }}
     permissions: write-all
     runs-on: ubuntu-latest
@@ -48,11 +67,13 @@ jobs:
 
       - name: Retrieve State from Update Branch
         run: |
-          git checkout origin/update build-state.json build.md 2>/dev/null || true
+          git checkout origin/update -- build-state.json 2>/dev/null || true
+          git checkout origin/update -- build.md 2>/dev/null || true
 
       - name: Build Target App
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_VER_CODE: ${{ needs.prepare.outputs.NEXT_VER_CODE }}
         run: |
           node dist/index.js build -a "${{ matrix.slug }}" --arch "${{ matrix.arch }}" --app-version "${{ matrix.version }}"
 
@@ -70,6 +91,7 @@ jobs:
 
   # When triggered manually without matrix
   build-direct:
+    needs: prepare
     if: ${{ inputs.matrix_json == '' || inputs.matrix_json == '{"include":[]}' }}
     permissions: write-all
     runs-on: ubuntu-latest
@@ -98,11 +120,13 @@ jobs:
 
       - name: Retrieve State from Update Branch
         run: |
-          git checkout origin/update build-state.json build.md 2>/dev/null || true
+          git checkout origin/update -- build-state.json 2>/dev/null || true
+          git checkout origin/update -- build.md 2>/dev/null || true
 
       - name: Build Apps
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_VER_CODE: ${{ needs.prepare.outputs.NEXT_VER_CODE }}
         run: |
           if [ -n "${{ inputs.target_app }}" ]; then
             node dist/index.js build -a "${{ inputs.target_app }}"
@@ -124,7 +148,7 @@ jobs:
 
   # Deployment, Releases, Web and Notifications
   deploy:
-    needs: [build-matrix, build-direct]
+    needs: [prepare, build-matrix, build-direct]
     if: always() && !cancelled() && (needs.build-matrix.result == 'success' || needs.build-matrix.result == 'failure' || needs.build-direct.result == 'success')
     permissions: write-all
     runs-on: ubuntu-latest
@@ -178,20 +202,10 @@ jobs:
           cp -f build.md /tmp/build.md 2>/dev/null || true
           ls -la build/
 
-      - name: Determine Next Version Tag
-        id: next_ver
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          RAW_TAG=$(gh release list -L 1 | awk -F '\t' '{print $3}')
-          TAG=${RAW_TAG//[^0-9]/}
-          if [ -z "$TAG" ]; then TAG=0; fi
-          echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
-
       - name: Create or Update GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.next_ver.outputs.NEXT_VER_CODE }}
+          TAG: ${{ needs.prepare.outputs.NEXT_VER_CODE }}
         run: |
           shopt -s nullglob
           files=(build/*.apk build/*.zip)
@@ -205,7 +219,7 @@ jobs:
 
       - name: Generate Static Web Pages
         env:
-          NEXT_VER_CODE: ${{ steps.next_ver.outputs.NEXT_VER_CODE }}
+          NEXT_VER_CODE: ${{ needs.prepare.outputs.NEXT_VER_CODE }}
         run: |
           node dist/index.js web --out /tmp/pages
 
@@ -214,7 +228,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git checkout -f update || git switch --discard-changes --orphan update
+          # Preserve existing files on update branch and checkout cleanly
+          git checkout -B update origin/update || git switch --discard-changes --orphan update
 
           cp -a /tmp/pages/* . 2>/dev/null || true
           cp -f /tmp/build-state.json build-state.json 2>/dev/null || true
@@ -225,7 +240,7 @@ jobs:
           git add *.html *.png *.css CNAME *-update.json 2>/dev/null || true
 
           if ! git diff --cached --quiet; then
-            git commit -m "Deploy release v${{ steps.next_ver.outputs.NEXT_VER_CODE }}"
+            git commit -m "Deploy release v${{ needs.prepare.outputs.NEXT_VER_CODE }}"
             git push origin HEAD:update
           else
             echo "No changes to commit to update branch"

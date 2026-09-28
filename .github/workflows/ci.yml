@@ -43,7 +43,8 @@ jobs:
 
       - name: Retrieve State from Update Branch
         run: |
-          git checkout origin/update build-state.json build.md 2>/dev/null || echo "No previous state found on update branch"
+          git checkout origin/update -- build-state.json 2>/dev/null || true
+          git checkout origin/update -- build.md 2>/dev/null || true
 
       - name: Check for Updates
         id: check_step
