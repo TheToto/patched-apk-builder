@@ -11,21 +11,57 @@ export class ApkMirrorProvider implements ApkProvider {
   }
 
   public canHandle(query: ApkDownloadQuery): boolean {
-    return !!query.sourceUrl && query.sourceUrl.includes('apkmirror.com');
+    return (
+      (!!query.sourceUrl && query.sourceUrl.includes('apkmirror.com')) ||
+      (!query.sourceUrl && !!query.pkgName)
+    );
   }
 
   public async download(query: ApkDownloadQuery): Promise<ApkProviderResult> {
-    if (!query.sourceUrl) {
-      throw new Error('APKMirror provider requires sourceUrl');
+    let baseUrl = query.sourceUrl ? query.sourceUrl.replace(/\/+$/, '') : '';
+
+    // If sourceUrl is not given, search APKMirror for pkgName
+    if (!baseUrl) {
+      const searchUrl = `https://www.apkmirror.com/?post_type=app_release&searchtype=apk&s=${encodeURIComponent(query.pkgName)}`;
+      const searchHtml = await this.http.fetchText(searchUrl);
+      const $search = cheerio.load(searchHtml);
+      const foundLink = $search('a.fontBlack, h5.appRowTitle a, div.appRow a').first().attr('href');
+      if (foundLink) {
+        // e.g. /apk/redditinc/reddit/reddit-2026-39-0-release/ -> extract base /apk/redditinc/reddit
+        const match = foundLink.match(/^(\/apk\/[^/]+\/[^/]+)/);
+        if (match) {
+          baseUrl = `https://www.apkmirror.com${match[1]}`;
+        }
+      }
+      if (!baseUrl) {
+        throw new Error(`Could not find app page on APKMirror for ${query.pkgName}`);
+      }
     }
 
-    const baseUrl = query.sourceUrl.replace(/\/+$/, '');
-    const cleanVersion = query.version.replace(/-release-(?:arm64-v8a|arm-v7a|x86_64|x86|universal)$/i, '');
-    const versionFormatted = cleanVersion.replace(/\s+/g, '-').replace(/\./g, '-');
     const appSlug = baseUrl.split('/').pop() || '';
+    let releaseUrl = '';
+    let versionFound = query.version;
 
-    // Step 1: Request release page for specific version
-    let releaseUrl = `${baseUrl}/${appSlug}-${versionFormatted}-release/`;
+    // If version is latest / auto / unspecified, pick the latest release on the app page
+    if (!query.version || query.version === 'latest' || query.version === 'auto') {
+      const baseHtml = await this.http.fetchText(baseUrl);
+      const $base = cheerio.load(baseHtml);
+      const firstRel = $base('a[href*="-release/"]').first().attr('href');
+      if (!firstRel) {
+        throw new Error(`Could not find any releases on APKMirror for ${baseUrl}`);
+      }
+      releaseUrl = new URL(firstRel, 'https://www.apkmirror.com').toString();
+      // Extract version from releaseUrl
+      const vMatch = releaseUrl.match(/-([0-9]+(?:-[0-9a-zA-Z]+)+)-release/);
+      if (vMatch) {
+        versionFound = vMatch[1].replace(/-/g, '.');
+      }
+    } else {
+      const cleanVersion = query.version.replace(/-release-(?:arm64-v8a|arm-v7a|x86_64|x86|universal)$/i, '');
+      const versionFormatted = cleanVersion.replace(/\s+/g, '-').replace(/\./g, '-');
+      releaseUrl = `${baseUrl}/${appSlug}-${versionFormatted}-release/`;
+    }
+
     let releaseHtml: string = '';
     try {
       releaseHtml = await this.http.fetchText(releaseUrl, {
@@ -42,7 +78,9 @@ export class ApkMirrorProvider implements ApkProvider {
         });
         const $base = cheerio.load(baseHtml);
         const titleText = $base('h1.marginZero, h1').first().text().trim();
-        if (titleText) {
+        if (titleText && query.version && query.version !== 'latest' && query.version !== 'auto') {
+          const cleanVersion = query.version.replace(/-release-(?:arm64-v8a|arm-v7a|x86_64|x86|universal)$/i, '');
+          const versionFormatted = cleanVersion.replace(/\s+/g, '-').replace(/\./g, '-');
           const fullSlug = titleText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
           releaseUrl = `${baseUrl}/${fullSlug}-${versionFormatted}-release/`;
           releaseHtml = await this.http.fetchText(releaseUrl, {

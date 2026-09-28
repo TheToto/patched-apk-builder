@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 export interface HttpOptions {
   headers?: Record<string, string>;
@@ -61,30 +65,89 @@ export class HttpClient {
     throw lastError;
   }
 
+  public async fetchTextWithCurl(url: string, options?: HttpOptions): Promise<string> {
+    const headers = this.getHeaders(options);
+    const args = ['-sL', '--fail-with-body'];
+    for (const [k, v] of Object.entries(headers)) {
+      args.push('-H', `${k}: ${v}`);
+    }
+    args.push(url);
+    const { stdout } = await execFileAsync('curl', args, { maxBuffer: 50 * 1024 * 1024 });
+    return stdout;
+  }
+
   public async fetchJson<T>(url: string, options?: HttpOptions): Promise<T> {
-    const res = await this.fetchWithRetry(url, options);
-    return (await res.json()) as T;
+    try {
+      const res = await this.fetchWithRetry(url, options);
+      return (await res.json()) as T;
+    } catch (err: any) {
+      if (err.message?.includes('403') || err.message?.includes('ECONNRESET')) {
+        const text = await this.fetchTextWithCurl(url, options);
+        return JSON.parse(text) as T;
+      }
+      throw err;
+    }
   }
 
   public async fetchText(url: string, options?: HttpOptions): Promise<string> {
-    const res = await this.fetchWithRetry(url, options);
-    return await res.text();
+    try {
+      const res = await this.fetchWithRetry(url, options);
+      return await res.text();
+    } catch (err: any) {
+      if (err.message?.includes('403') || err.message?.includes('ECONNRESET')) {
+        return await this.fetchTextWithCurl(url, options);
+      }
+      throw err;
+    }
   }
 
   public async downloadFile(url: string, destPath: string, options?: HttpOptions): Promise<string> {
     const tempDest = `${destPath}.tmp.${Date.now()}`;
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
 
-    const res = await this.fetchWithRetry(url, options);
-    if (!res.body) {
-      throw new Error(`Empty body when downloading from: ${url}`);
+    try {
+      const sanitizedOptions = { ...options };
+      if (url.includes('X-Amz-Signature') || url.includes('.r2.cloudflarestorage.com')) {
+        if (sanitizedOptions.headers) {
+          const h = { ...sanitizedOptions.headers };
+          delete h['Referer'];
+          delete h['referer'];
+          sanitizedOptions.headers = h;
+        }
+      }
+
+      const res = await this.fetchWithRetry(url, sanitizedOptions);
+      if (!res.body) {
+        throw new Error(`Empty body when downloading from: ${url}`);
+      }
+
+      const fileStream = fs.createWriteStream(tempDest);
+      const readable = Readable.fromWeb(res.body as any);
+      await pipeline(readable, fileStream);
+
+      fs.renameSync(tempDest, destPath);
+      return destPath;
+    } catch (err: any) {
+      try {
+        return await this.downloadWithCurl(url, destPath, options);
+      } catch {
+        throw err;
+      }
     }
+  }
 
-    const fileStream = fs.createWriteStream(tempDest);
-    // Node.js web-stream to readable stream
-    const readable = Readable.fromWeb(res.body as any);
-    await pipeline(readable, fileStream);
-
+  public async downloadWithCurl(url: string, destPath: string, options?: HttpOptions): Promise<string> {
+    const tempDest = `${destPath}.tmp.curl.${Date.now()}`;
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+    const headers = this.getHeaders(options);
+    const args = ['-sL', '--fail', '-o', tempDest];
+    const isSigned = url.includes('X-Amz-Signature') || url.includes('.r2.cloudflarestorage.com');
+    for (const [k, v] of Object.entries(headers)) {
+      if (isSigned && k.toLowerCase() === 'referer') continue;
+      args.push('-H', `${k}: ${v}`);
+    }
+    args.push(url);
+    await execFileAsync('curl', args);
     fs.renameSync(tempDest, destPath);
     return destPath;
   }

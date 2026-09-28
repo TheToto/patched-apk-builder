@@ -7,18 +7,16 @@ export class ApkComboProvider implements ApkProvider {
   private http = new HttpClient();
 
   public canHandle(query: ApkDownloadQuery): boolean {
-    return !!query.sourceUrl && query.sourceUrl.includes('apkcombo.com');
+    return (
+      (!!query.sourceUrl && query.sourceUrl.includes('apkcombo.com')) ||
+      (!query.sourceUrl && !!query.pkgName)
+    );
   }
 
   public async download(query: ApkDownloadQuery): Promise<ApkProviderResult> {
-    if (!query.sourceUrl) {
-      throw new Error('APKCombo provider requires sourceUrl');
-    }
-
-    const baseUrl = query.sourceUrl.replace(/\/+$/, '');
-    const downloadPageUrl = baseUrl.endsWith('/download/apk')
-      ? baseUrl
-      : `${baseUrl}/download/apk`;
+    const downloadPageUrl = query.sourceUrl
+      ? (query.sourceUrl.endsWith('/download/apk') ? query.sourceUrl : `${query.sourceUrl.replace(/\/+$/, '')}/download/apk`)
+      : `https://apkcombo.com/app/${encodeURIComponent(query.pkgName)}/download/apk`;
 
     const headers = {
       'User-Agent': USER_AGENT_BROWSER,
@@ -34,6 +32,7 @@ export class ApkComboProvider implements ApkProvider {
 
     let downloadUrl: string | null = null;
     let isBundle = false;
+    let versionFound = query.version;
 
     // Search through variant list items
     $('.file-list li, .variant-list li, .accordion-item').each((_, item) => {
@@ -50,6 +49,10 @@ export class ApkComboProvider implements ApkProvider {
       if (matchesArch && (isApk || isXapk)) {
         downloadUrl = new URL(link, 'https://apkcombo.com').toString();
         isBundle = isXapk;
+        const verText = $(item).find('.vername').text().trim();
+        if (verText) {
+          versionFound = verText.replace(/^[a-zA-Z\s]+/, '').trim();
+        }
       }
     });
 
@@ -58,6 +61,10 @@ export class ApkComboProvider implements ApkProvider {
       const firstLink = $('a.variant, a.download-btn, ul.file-list a').first().attr('href');
       if (firstLink) {
         downloadUrl = new URL(firstLink, 'https://apkcombo.com').toString();
+        const verText = $('.vername').first().text().trim();
+        if (verText) {
+          versionFound = verText.replace(/^[a-zA-Z\s]+/, '').trim();
+        }
       }
     }
 
@@ -65,18 +72,30 @@ export class ApkComboProvider implements ApkProvider {
       throw new Error(`Failed to locate download link on APKCombo page: ${downloadPageUrl}`);
     }
 
+    // Unpack /r2?u= redirect target directly if present
+    if (downloadUrl.includes('/r2?u=')) {
+      try {
+        const u = new URL(downloadUrl);
+        const directU = u.searchParams.get('u');
+        if (directU) {
+          downloadUrl = directU;
+        }
+      } catch {
+        // keep downloadUrl
+      }
+    }
+
     const targetFile = isBundle ? `${query.destPath}.xapk` : query.destPath;
     await this.http.downloadFile(downloadUrl, targetFile, {
       headers: {
-        'User-Agent': USER_AGENT_BROWSER,
-        Referer: downloadPageUrl
+        'User-Agent': USER_AGENT_BROWSER
       }
     });
 
     return {
       filePath: targetFile,
       isBundle,
-      versionFound: query.version
+      versionFound
     };
   }
 }

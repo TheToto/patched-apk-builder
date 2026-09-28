@@ -9,16 +9,17 @@ export class ArchiveProvider implements ApkProvider {
   private http = new HttpClient();
 
   public canHandle(query: ApkDownloadQuery): boolean {
-    return !!query.sourceUrl && query.sourceUrl.includes('archive.org');
+    return (
+      (!!query.sourceUrl && query.sourceUrl.includes('archive.org')) ||
+      (!query.sourceUrl && !!query.pkgName)
+    );
   }
 
   public async download(query: ApkDownloadQuery): Promise<ApkProviderResult> {
-    if (!query.sourceUrl) {
-      throw new Error('archive.org provider requires sourceUrl');
-    }
-
-    const cleanBaseUrl = query.sourceUrl.replace(/\/+$/, '');
-    const html = await this.http.fetchText(cleanBaseUrl);
+    const cleanBaseUrl = (
+      query.sourceUrl || `https://archive.org/download/jhc-apks/apks/${query.pkgName}`
+    ).replace(/\/+$/, '');
+    const html = await this.http.fetchText(`${cleanBaseUrl}/`);
     const $ = cheerio.load(html);
 
     const fileLinks: string[] = [];

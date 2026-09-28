@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc",
     "start": "tsx src/index.ts",
+    "cli": "tsx src/index.ts",
     "check-updates": "tsx src/index.ts check",
     "build-apps": "tsx src/index.ts build",
     "gen-web": "tsx src/index.ts web",

@@ -16,7 +16,25 @@ export class AptoideProvider implements ApkProvider {
 
   public async download(query: ApkDownloadQuery): Promise<ApkProviderResult> {
     const pkg = query.pkgName;
-    const apiUrl = `https://ws75.aptoide.com/api/7/app/get?package_name=${encodeURIComponent(pkg)}`;
+    let apiUrl = `https://ws75.aptoide.com/api/7/app/get?package_name=${encodeURIComponent(pkg)}`;
+
+    if (query.version && query.version !== 'latest' && query.version !== 'auto') {
+      try {
+        const versRes = await this.http.fetchJson<any>(
+          `https://ws75.aptoide.com/api/7/app/getVersions?package_name=${encodeURIComponent(pkg)}`
+        );
+        const list = versRes?.list;
+        if (Array.isArray(list)) {
+          const cleanTarget = query.version.replace(/^v/, '').trim();
+          const match = list.find((item: any) => item.file?.vername === cleanTarget);
+          if (match && match.id) {
+            apiUrl = `https://ws75.aptoide.com/api/7/app/get?app_id=${match.id}`;
+          }
+        }
+      } catch {
+        // Fallback to default apiUrl
+      }
+    }
 
     const response = await this.http.fetchJson<any>(apiUrl, {
       headers: {

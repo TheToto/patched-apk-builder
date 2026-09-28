@@ -10,6 +10,7 @@ import { WebGenerator } from './web/generator.js';
 import { CiNotifier } from './ci/notifier.js';
 import { AaptTool } from './tools/aapt.js';
 import { ApkSigner } from './tools/apk-signer.js';
+import { ApkResolver } from './apk/resolver.js';
 import type { ConcreteArch } from './core/types.js';
 
 const program = new Command();
@@ -153,6 +154,82 @@ program
       }
     } catch (err: any) {
       ctx.error(`Failed to extract signature: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+// Command: download
+program
+  .command('download [packageOrSlug]')
+  .alias('dl')
+  .description('Download an authentic APK by package name (e.g. com.reddit.frontpage) or app slug')
+  .option('-a, --app <packageOrSlug>', 'Application package name or slug (e.g. com.reddit.frontpage, reddit)')
+  .option('--pkg <package>', 'Application package name (e.g. com.reddit.frontpage)')
+  .option('-c, --config <path>', 'Path to configuration file', 'config.toml')
+  .option('-v, --app-version <ver>', 'Application version (e.g. 2026.14.0 or latest)')
+  .option('-p, --provider <name>', 'Specific provider (archive, apkmirror, aptoide, apkpure, apkcombo, uptodown, github, direct)')
+  .option('--arch <arch>', 'Target architecture (arm64-v8a, arm-v7a, all)', 'arm64-v8a')
+  .option('-o, --out <dir>', 'Output directory for downloaded files', 'temp/downloads')
+  .option('--all', 'Attempt download across all compatible providers and report results')
+  .option('--no-verify', 'Skip signature verification against sig.txt')
+  .action(async (packageOrSlug, options) => {
+    try {
+      const targetApp = packageOrSlug || options.pkg || options.app;
+      if (!targetApp) {
+        ctx.error('Please specify a package name or app slug (e.g. com.reddit.frontpage or reddit)');
+        console.log('\nUsage:');
+        console.log('  revanced-builder download com.reddit.frontpage');
+        console.log('  revanced-builder download reddit -p aptoide');
+        console.log('  revanced-builder download com.reddit.frontpage --all\n');
+        process.exit(1);
+      }
+
+      let config;
+      const configPath = path.resolve(options.config);
+      if (fs.existsSync(configPath)) {
+        config = loadConfig(configPath);
+      }
+      const resolver = new ApkResolver(ctx);
+      ctx.log(`Starting APK download for: ${targetApp}...`);
+      const results = await resolver.downloadStandaloneApk({
+        appNameOrSlug: targetApp,
+        config,
+        version: options.appVersion,
+        arch: options.arch as ConcreteArch,
+        providerName: options.provider,
+        outDir: options.out,
+        tryAll: !!options.all,
+        verifySignature: options.verify
+      });
+
+      console.log('\n--- Download Results ---');
+      for (const res of results) {
+        if (res.success) {
+          const sizeMb = ((res.fileSize || 0) / (1024 * 1024)).toFixed(2);
+          const sig = res.signatureValid === undefined ? 'SKIPPED' : res.signatureValid ? 'VALID' : 'INVALID';
+          console.log(`\nProvider:   ${res.provider}`);
+          console.log(`Status:     SUCCESS`);
+          console.log(`File:       ${res.filePath}`);
+          console.log(`Size:       ${sizeMb} MB ${res.isBundle ? '(bundle/split)' : ''}`);
+          console.log(`Version:    ${res.versionFound || 'N/A'}`);
+          console.log(`Signature:  ${sig} (SHA-256: ${res.certSha256 || 'N/A'})`);
+        } else {
+          console.log(`\nProvider:   ${res.provider}`);
+          console.log(`Status:     FAILED`);
+          console.log(`Error:      ${res.error}`);
+        }
+      }
+      console.log('------------------------\n');
+
+      const anySuccess = results.some((r) => r.success);
+      if (!anySuccess) {
+        ctx.error('All download attempts failed.');
+        process.exit(1);
+      } else {
+        ctx.success('Download operation completed!');
+      }
+    } catch (err: any) {
+      ctx.error(`Download failed: ${err.message}`);
       process.exit(1);
     }
   });

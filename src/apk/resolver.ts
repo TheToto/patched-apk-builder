@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import AdmZip from 'adm-zip';
-import type { AppConfig, ConcreteArch } from '../core/types.js';
+import type { AppConfig, ConcreteArch, FullConfig } from '../core/types.js';
 import type { AppContext } from '../core/context.js';
 import type { ApkProvider, ApkProviderResult } from './provider.interface.js';
+import { inferPackageName } from '../core/pkg.js';
 import { ArchiveProvider } from './providers/archive.js';
 import { ApkMirrorProvider } from './providers/apkmirror.js';
 import { UptodownProvider } from './providers/uptodown.js';
@@ -14,6 +15,29 @@ import { ApkComboProvider } from './providers/apkcombo.js';
 import { GitHubReleaseProvider } from './providers/github.js';
 import { ApkEditor } from '../tools/apk-editor.js';
 import { ApkSigner } from '../tools/apk-signer.js';
+
+export interface StandaloneDownloadOptions {
+  appNameOrSlug: string;
+  config?: FullConfig;
+  version?: string;
+  arch?: ConcreteArch;
+  providerName?: string;
+  outDir?: string;
+  tryAll?: boolean;
+  verifySignature?: boolean;
+}
+
+export interface StandaloneDownloadResult {
+  provider: string;
+  success: boolean;
+  versionFound?: string;
+  filePath?: string;
+  fileSize?: number;
+  isBundle?: boolean;
+  signatureValid?: boolean;
+  certSha256?: string;
+  error?: string;
+}
 
 export class ApkResolver {
   private providers: ApkProvider[];
@@ -142,5 +166,185 @@ export class ApkResolver {
     }
 
     return finalStockApk;
+  }
+
+  public async downloadStandaloneApk(
+    opts: StandaloneDownloadOptions
+  ): Promise<StandaloneDownloadResult[]> {
+    const target = opts.appNameOrSlug.trim();
+    const app = opts.config
+      ? Object.values(opts.config.apps).find((a) => {
+          const lower = target.toLowerCase();
+          return (
+            a.slug.toLowerCase() === lower ||
+            a.name.toLowerCase() === lower ||
+            inferPackageName(a).toLowerCase() === lower
+          );
+        })
+      : undefined;
+
+    const syntheticApp: AppConfig = {
+      name: target,
+      slug: target.toLowerCase(),
+      enabled: true,
+      rvBrand: 'Morphe',
+      buildMode: 'both',
+      patchMethod: 'revanced',
+      version: opts.version || 'latest',
+      arch: opts.arch || 'arm64-v8a',
+      patchesSource: '',
+      patchesVersion: 'latest',
+      cliSource: '',
+      cliVersion: 'latest',
+      exclusivePatches: false,
+      includeStock: 'merged',
+      enableUpdateChecks: true
+    };
+
+    const pkgName = target.includes('.')
+      ? target
+      : app
+        ? inferPackageName(app)
+        : inferPackageName(syntheticApp);
+
+    const targetVersion = (opts.version || app?.version || 'latest').trim();
+    const targetArch = (opts.arch || (app?.arch && app.arch !== 'both' ? app.arch : 'arm64-v8a')) as ConcreteArch;
+    const outDir = opts.outDir || path.join(this.ctx.rootDir, 'temp', 'downloads');
+    fs.mkdirSync(outDir, { recursive: true });
+
+    const providerUrls: Record<string, string | undefined> = {
+      github: app?.githubDlurl,
+      archive: app?.archiveDlurl,
+      apkmirror: app?.apkmirrorDlurl,
+      apkpure: app?.apkpureDlurl,
+      aptoide: app?.aptoideDlurl,
+      apkcombo: app?.apkcomboDlurl,
+      uptodown: app?.uptodownDlurl,
+      direct: app?.directDlurl
+    };
+
+    let targetProviders: ApkProvider[] = [];
+    if (opts.providerName) {
+      const p = this.providers.find(
+        (prov) => prov.name.toLowerCase() === opts.providerName!.toLowerCase()
+      );
+      if (!p) {
+        throw new Error(
+          `Unknown provider: ${opts.providerName}. Available: ${this.providers.map((pr) => pr.name).join(', ')}`
+        );
+      }
+      targetProviders = [p];
+    } else {
+      targetProviders = this.providers.filter((p) =>
+        p.canHandle({
+          pkgName,
+          version: targetVersion,
+          arch: targetArch,
+          destPath: '',
+          sourceUrl: providerUrls[p.name]
+        })
+      );
+    }
+
+    if (targetProviders.length === 0) {
+      throw new Error(`No compatible provider found for app: ${opts.appNameOrSlug} (${pkgName})`);
+    }
+
+    const results: StandaloneDownloadResult[] = [];
+    const cleanVer = targetVersion.replace(/\s+/g, '-').replace(/^v/, '');
+    const cleanArch = targetArch.replace(/\s+/g, '-');
+
+    for (const provider of targetProviders) {
+      this.ctx.log(
+        `[Download] Querying ${provider.name} for ${pkgName} (v: ${targetVersion}, arch: ${targetArch})...`
+      );
+      const baseDestPath = path.join(outDir, `${pkgName}-${cleanVer}-${provider.name}-${cleanArch}.apk`);
+
+      try {
+        const dlResult = await provider.download({
+          pkgName,
+          version: targetVersion,
+          arch: targetArch,
+          dpi: app?.dpi,
+          destPath: baseDestPath,
+          sourceUrl: providerUrls[provider.name]
+        });
+
+        if (!fs.existsSync(dlResult.filePath)) {
+          throw new Error(`Downloaded file not found at ${dlResult.filePath}`);
+        }
+
+        const fileSize = fs.statSync(dlResult.filePath).size;
+        let signatureValid: boolean | undefined = undefined;
+        let certSha256: string | undefined = undefined;
+
+        let isBundle = dlResult.isBundle;
+        let baseEntry: any = null;
+        let zip: AdmZip | null = null;
+
+        try {
+          zip = new AdmZip(dlResult.filePath);
+          const apkEntries = zip.getEntries().filter((e) => e.entryName.endsWith('.apk'));
+          if (apkEntries.length > 1 || zip.getEntry('base.apk') || dlResult.filePath.endsWith('.xapk') || dlResult.filePath.endsWith('.apkm')) {
+            isBundle = true;
+            baseEntry =
+              zip.getEntry('base.apk') ||
+              apkEntries.find((e) => !e.entryName.startsWith('config.')) ||
+              apkEntries[0];
+          }
+        } catch {
+          // not a zip file or cannot inspect
+        }
+
+        if (opts.verifySignature !== false) {
+          if (isBundle && baseEntry && zip) {
+            const tempBase = `${dlResult.filePath}.verify-base.apk`;
+            fs.writeFileSync(tempBase, baseEntry.getData());
+            try {
+              certSha256 = (await this.signer.getCertSha256(tempBase)) || undefined;
+              signatureValid = await this.signer.verifySignatureAgainstSigTxt(tempBase, pkgName);
+            } finally {
+              if (fs.existsSync(tempBase)) {
+                try {
+                  fs.unlinkSync(tempBase);
+                } catch {}
+              }
+            }
+          } else {
+            certSha256 = (await this.signer.getCertSha256(dlResult.filePath)) || undefined;
+            signatureValid = await this.signer.verifySignatureAgainstSigTxt(dlResult.filePath, pkgName);
+          }
+        }
+
+        const record: StandaloneDownloadResult = {
+          provider: provider.name,
+          success: true,
+          versionFound: dlResult.versionFound,
+          filePath: dlResult.filePath,
+          fileSize,
+          isBundle,
+          signatureValid,
+          certSha256
+        };
+
+        results.push(record);
+        this.ctx.success(
+          `[Download] ✓ ${provider.name} succeeded (${(fileSize / (1024 * 1024)).toFixed(2)} MB, version: ${dlResult.versionFound})`
+        );
+
+        if (!opts.tryAll) {
+          break;
+        }
+      } catch (err: any) {
+        this.ctx.warn(`[Download] ✗ ${provider.name} failed: ${err.message}`);
+        results.push({
+          provider: provider.name,
+          success: false,
+          error: err.message
+        });
+      }
+    }
+
+    return results;
   }
 }
