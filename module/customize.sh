@@ -34,6 +34,17 @@ if BASEPATH=$(get_basepath); then
 	if [ "${BASEPATH:1:4}" != "data" ]; then
 		IS_SYSTEM_APP=true
 		ui_print "* $PKG_NAME is a system app"
+	else
+		# Check if a system-partition copy also exists (user update masking system app)
+		SYS_PATH=$(pmex path -a "$PKG_NAME" 2>/dev/null | grep -v "^package:/data" | head -1)
+		if [ -n "$SYS_PATH" ]; then
+			IS_SYSTEM_APP=true
+			ui_print "* $PKG_NAME is a system app (with user update)"
+			ui_print "* Reverting Play Store update..."
+			pmex uninstall-system-updates "$PKG_NAME" >/dev/null 2>&1
+			# Re-resolve basepath after reverting
+			if BASEPATH=$(get_basepath); then :; fi
+		fi
 	fi
 
 	VERSION=$(get_app_version)
