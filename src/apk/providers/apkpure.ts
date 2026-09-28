@@ -68,9 +68,35 @@ export class ApkPureProvider implements ApkProvider {
   }
 
   private async resolveVersionCode(query: ApkDownloadQuery): Promise<string | null> {
-    const versionsUrl = query.sourceUrl
+    let versionsUrl = query.sourceUrl
       ? `${query.sourceUrl.replace(/\/+$/, '')}/versions`
-      : `https://apkpure.com/${query.pkgName}/versions`;
+      : '';
+
+    if (!versionsUrl) {
+      try {
+        const searchHtml = await this.http.fetchText(
+          `https://apkpure.com/search?q=${encodeURIComponent(query.pkgName)}`,
+          {
+            headers: {
+              'User-Agent': USER_AGENT_BROWSER,
+              Referer: 'https://apkpure.com/'
+            }
+          }
+        );
+        const $s = cheerio.load(searchHtml);
+        const matchHref = $s(`a[href*="/${query.pkgName}"]`).first().attr('href');
+        if (matchHref) {
+          const baseAppUrl = matchHref.startsWith('http') ? matchHref : `https://apkpure.com${matchHref}`;
+          versionsUrl = `${baseAppUrl.replace(/\/+$/, '')}/versions`;
+        }
+      } catch {
+        // fallback below
+      }
+    }
+
+    if (!versionsUrl) {
+      versionsUrl = `https://apkpure.com/${query.pkgName}/versions`;
+    }
 
     try {
       const html = await this.http.fetchText(versionsUrl, {
