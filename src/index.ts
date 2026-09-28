@@ -160,41 +160,105 @@ program
 
 // Command: download
 program
-  .command('download [packageOrSlug]')
+  .command('download [packageOrSlug] [version]')
   .alias('dl')
-  .description('Download an authentic APK by package name (e.g. com.reddit.frontpage) or app slug')
+  .description('Download an authentic APK by package name or slug with optional version selection')
   .option('-a, --app <packageOrSlug>', 'Application package name or slug (e.g. com.reddit.frontpage, reddit)')
   .option('--pkg <package>', 'Application package name (e.g. com.reddit.frontpage)')
-  .option('-c, --config <path>', 'Path to configuration file', 'config.toml')
-  .option('-v, --app-version <ver>', 'Application version (e.g. 2026.14.0 or latest)')
+  .option('-v, --version <ver>', 'Application version (e.g. 2026.14.0 or latest)')
+  .option('--app-version <ver>', 'Alias for --version')
+  .option('-s, --select', 'Interactive prompt to select from available versions')
+  .option('-l, --list-versions', 'List available versions from compatible providers and patches')
   .option('-p, --provider <name>', 'Specific provider (archive, apkmirror, aptoide, apkpure, apkcombo, uptodown, github, direct)')
   .option('--arch <arch>', 'Target architecture (arm64-v8a, arm-v7a, all)', 'arm64-v8a')
   .option('-o, --out <dir>', 'Output directory for downloaded files', 'temp/downloads')
   .option('--all', 'Attempt download across all compatible providers and report results')
   .option('--no-verify', 'Skip signature verification against sig.txt')
-  .action(async (packageOrSlug, options) => {
+  .action(async (packageOrSlug, versionArg, cmdOpts) => {
     try {
+      let version = versionArg;
+      let options = cmdOpts;
+      if (typeof versionArg === 'object' && versionArg !== null) {
+        options = versionArg;
+        version = undefined;
+      }
+      options = options || {};
+
       const targetApp = packageOrSlug || options.pkg || options.app;
       if (!targetApp) {
         ctx.error('Please specify a package name or app slug (e.g. com.reddit.frontpage or reddit)');
         console.log('\nUsage:');
         console.log('  revanced-builder download com.reddit.frontpage');
-        console.log('  revanced-builder download reddit -p aptoide');
-        console.log('  revanced-builder download com.reddit.frontpage --all\n');
+        console.log('  revanced-builder download com.reddit.frontpage 2026.14.0');
+        console.log('  revanced-builder download com.reddit.frontpage --select');
+        console.log('  revanced-builder download com.reddit.frontpage --list-versions');
+        console.log('  revanced-builder download reddit -p aptoide\n');
         process.exit(1);
       }
 
       let config;
-      const configPath = path.resolve(options.config);
+      const configPath = path.resolve(options.config || 'config.toml');
       if (fs.existsSync(configPath)) {
         config = loadConfig(configPath);
       }
       const resolver = new ApkResolver(ctx);
-      ctx.log(`Starting APK download for: ${targetApp}...`);
+
+      if (options.listVersions) {
+        ctx.log(`Fetching available versions for ${targetApp}...`);
+        const versions = await resolver.getAvailableVersions(targetApp, config);
+        if (versions.length === 0) {
+          ctx.warn(`No versions discovered for ${targetApp}.`);
+        } else {
+          ctx.success(`Available versions for ${targetApp} (${versions.length}):`);
+          for (const v of versions) {
+            const tag = v.isPatchesCompatible ? ' ⭐ [Compatible Patches]' : '';
+            console.log(`  - ${v.version} (${v.sources.join(', ')})${tag}`);
+          }
+        }
+        return;
+      }
+
+      let targetVersion = version || options.version || options.appVersion;
+
+      if (options.select) {
+        ctx.log(`Fetching available versions for ${targetApp}...`);
+        const versions = await resolver.getAvailableVersions(targetApp, config);
+        if (versions.length > 0) {
+          console.log(`\nAvailable versions for ${targetApp}:`);
+          const topVersions = versions.slice(0, 15);
+          topVersions.forEach((v, idx) => {
+            const tag = v.isPatchesCompatible ? ' ⭐ [Compatible Patches]' : '';
+            console.log(`  [${idx + 1}] ${v.version} (${v.sources.join(', ')})${tag}`);
+          });
+
+          const readline = await import('node:readline/promises');
+          const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+          const ans = (
+            await rl.question(
+              `\nSelect version [1-${topVersions.length}] or enter custom (default: 1): `
+            )
+          ).trim();
+          rl.close();
+
+          const choiceNum = parseInt(ans, 10);
+          if (!isNaN(choiceNum) && choiceNum >= 1 && choiceNum <= topVersions.length) {
+            targetVersion = topVersions[choiceNum - 1].version;
+          } else if (ans) {
+            targetVersion = ans;
+          } else {
+            targetVersion = topVersions[0].version;
+          }
+          ctx.log(`Selected version: ${targetVersion}`);
+        } else {
+          ctx.warn(`No versions discovered automatically, continuing with default.`);
+        }
+      }
+
+      ctx.log(`Starting APK download for: ${targetApp} (version: ${targetVersion || 'auto'})...`);
       const results = await resolver.downloadStandaloneApk({
         appNameOrSlug: targetApp,
         config,
-        version: options.appVersion,
+        version: targetVersion,
         arch: options.arch as ConcreteArch,
         providerName: options.provider,
         outDir: options.out,

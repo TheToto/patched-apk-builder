@@ -13,8 +13,16 @@ import { AptoideProvider } from './providers/aptoide.js';
 import { ApkPureProvider } from './providers/apkpure.js';
 import { ApkComboProvider } from './providers/apkcombo.js';
 import { GitHubReleaseProvider } from './providers/github.js';
+import { HttpClient } from '../core/http.js';
+import { sortVersionsDescending } from '../core/version.js';
 import { ApkEditor } from '../tools/apk-editor.js';
 import { ApkSigner } from '../tools/apk-signer.js';
+
+export interface AvailableVersionInfo {
+  version: string;
+  sources: string[];
+  isPatchesCompatible?: boolean;
+}
 
 export interface StandaloneDownloadOptions {
   appNameOrSlug: string;
@@ -43,6 +51,7 @@ export class ApkResolver {
   private providers: ApkProvider[];
   private apkEditor: ApkEditor;
   private signer: ApkSigner;
+  private http: HttpClient;
 
   constructor(private ctx: AppContext) {
     this.providers = [
@@ -57,6 +66,7 @@ export class ApkResolver {
     ];
     this.apkEditor = new ApkEditor(this.ctx);
     this.signer = new ApkSigner(this.ctx);
+    this.http = new HttpClient();
   }
 
   public async acquireStockApk(
@@ -346,5 +356,152 @@ export class ApkResolver {
     }
 
     return results;
+  }
+
+  public async getAvailableVersions(
+    appNameOrSlug: string,
+    config?: FullConfig
+  ): Promise<AvailableVersionInfo[]> {
+    const target = appNameOrSlug.trim();
+    const app = config
+      ? Object.values(config.apps).find((a) => {
+          const lower = target.toLowerCase();
+          return (
+            a.slug.toLowerCase() === lower ||
+            a.name.toLowerCase() === lower ||
+            inferPackageName(a).toLowerCase() === lower
+          );
+        })
+      : undefined;
+
+    const syntheticApp: AppConfig = {
+      name: target,
+      slug: target.toLowerCase(),
+      enabled: true,
+      rvBrand: 'Morphe',
+      buildMode: 'both',
+      patchMethod: 'revanced',
+      version: 'latest',
+      arch: 'arm64-v8a',
+      patchesSource: '',
+      patchesVersion: 'latest',
+      cliSource: '',
+      cliVersion: 'latest',
+      exclusivePatches: false,
+      includeStock: 'merged',
+      enableUpdateChecks: true
+    };
+
+    const pkgName = target.includes('.')
+      ? target
+      : app
+        ? inferPackageName(app)
+        : inferPackageName(syntheticApp);
+
+    const versionMap = new Map<string, Set<string>>();
+
+    const addVersion = (ver: string, source: string) => {
+      const clean = ver.trim().replace(/^v/, '');
+      if (!clean || clean.length < 2) return;
+      if (!versionMap.has(clean)) {
+        versionMap.set(clean, new Set());
+      }
+      versionMap.get(clean)!.add(source);
+    };
+
+    const tasks: Promise<void>[] = [];
+
+    // Source 1: Archive.org
+    const archiveBaseUrl = app?.archiveDlurl || `https://archive.org/download/jhc-apks/apks/${pkgName}`;
+    tasks.push(
+      (async () => {
+        try {
+          const cleanUrl = archiveBaseUrl.replace(/\/+$/, '');
+          const html = await this.http.fetchText(`${cleanUrl}/`);
+          const regex = new RegExp(`[0-9a-zA-Z._-]+-([0-9a-zA-Z._-]+)-(all|arm64-v8a|arm-v7a|universal)`, 'gi');
+          for (const m of html.matchAll(regex)) {
+            if (m[1]) addVersion(m[1], 'Archive.org');
+          }
+        } catch {
+          // ignore
+        }
+      })()
+    );
+
+    // Source 2: Aptoide REST API
+    tasks.push(
+      (async () => {
+        try {
+          const res = await this.http.fetchJson<any>(
+            `https://ws75.aptoide.com/api/7/app/getVersions?package_name=${encodeURIComponent(pkgName)}`
+          );
+          if (Array.isArray(res?.list)) {
+            for (const item of res.list) {
+              if (item.file?.vername) {
+                addVersion(item.file.vername, 'Aptoide');
+              }
+            }
+          }
+        } catch {
+          // ignore
+        }
+      })()
+    );
+
+    // Source 3: APKCombo old-versions
+    tasks.push(
+      (async () => {
+        try {
+          const html = await this.http.fetchText(
+            `https://apkcombo.com/app/${encodeURIComponent(pkgName)}/old-versions`,
+            {
+              headers: { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0' }
+            }
+          );
+          const regex = /<span class="vername">[^0-9]*([0-9]+(?:\.[0-9a-zA-Z]+)+)/g;
+          for (const m of html.matchAll(regex)) {
+            if (m[1]) addVersion(m[1], 'APKCombo');
+          }
+        } catch {
+          // ignore
+        }
+      })()
+    );
+
+    await Promise.allSettled(tasks);
+
+    // Check patch compatibility if app is configured
+    const compatibleVersions: string[] = [];
+    if (app && app.patchMethod !== 'lspatch' && app.patchesSource) {
+      try {
+        const { PatchInspector } = await import('../patches/inspector.js');
+        const { ReleaseFetcher } = await import('../patches/fetcher.js');
+        const { ToolManager } = await import('../tools/tool-manager.js');
+        const toolManager = new ToolManager(this.ctx);
+        await toolManager.ensureCmprBinaries();
+        const fetcher = new ReleaseFetcher(this.ctx);
+        const cliRelease = await fetcher.getCliJar(app.cliSource, app.cliVersion);
+        const patchRelease = await fetcher.getPatchesBundle(app.patchesSource, app.patchesVersion);
+        const inspector = new PatchInspector(this.ctx);
+        const comp = await inspector.getCompatibleVersions(
+          cliRelease.filePath,
+          patchRelease.filePath,
+          pkgName
+        );
+        for (const cv of comp) {
+          compatibleVersions.push(cv);
+          addVersion(cv, 'Patches');
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    const sorted = sortVersionsDescending([...versionMap.keys()]);
+    return sorted.map((v) => ({
+      version: v,
+      sources: [...(versionMap.get(v) || [])],
+      isPatchesCompatible: compatibleVersions.includes(v)
+    }));
   }
 }
