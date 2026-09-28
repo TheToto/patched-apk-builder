@@ -21,12 +21,17 @@ jobs:
     outputs:
       NEXT_VER_CODE: ${{ steps.ver.outputs.NEXT_VER_CODE }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Determine Next Version Code
         id: ver
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RAW_TAG=$(gh release list -L 1 --json tagName -q '.[0].tagName' 2>/dev/null || true)
+          RAW_TAG=$(gh release list -R "$GITHUB_REPOSITORY" -L 1 --json tagName -q '.[0].tagName')
           TAG=${RAW_TAG//[^0-9]/}
           if [ -z "$TAG" ]; then TAG=0; fi
           NEXT=$((TAG + 1))
@@ -210,10 +215,10 @@ jobs:
           shopt -s nullglob
           files=(build/*.apk build/*.zip)
           if [ ${#files[@]} -gt 0 ]; then
-            if gh release view "$TAG" >/dev/null 2>&1; then
-              gh release upload "$TAG" "${files[@]}" --clobber
+            if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              gh release upload "$TAG" "${files[@]}" -R "$GITHUB_REPOSITORY" --clobber
             else
-              gh release create "$TAG" "${files[@]}" --title "Release v${TAG}" --notes "Automated release build v${TAG}"
+              gh release create "$TAG" "${files[@]}" -R "$GITHUB_REPOSITORY" --title "Release v${TAG}" --notes "Automated release build v${TAG}"
             fi
           fi
 
