@@ -89,19 +89,22 @@ export class ApkSigner {
     }
 
     const content = fs.readFileSync(sigTxtPath, 'utf-8');
-    const knownSignatures: Record<string, string> = {};
+    const knownSignatures: Record<string, Set<string>> = {};
 
     for (const line of content.split('\n')) {
       const parts = line.trim().split(/\s+/);
       if (parts.length >= 2) {
         const hash = parts[0].toLowerCase();
         const pkg = parts[1];
-        knownSignatures[pkg] = hash;
+        if (!knownSignatures[pkg]) {
+          knownSignatures[pkg] = new Set();
+        }
+        knownSignatures[pkg].add(hash);
       }
     }
 
-    const expectedSig = knownSignatures[pkgName]?.toLowerCase();
-    if (!expectedSig) {
+    const expectedSigs = knownSignatures[pkgName];
+    if (!expectedSigs || expectedSigs.size === 0) {
       // Package not in sig.txt, nothing to enforce
       return true;
     }
@@ -112,15 +115,15 @@ export class ApkSigner {
       return false;
     }
 
-    const matchFound = actualSigs.some(sig => sig === expectedSig);
+    const matchFound = actualSigs.some(sig => expectedSigs.has(sig));
     if (!matchFound) {
       this.ctx.error(
-        `Signature mismatch for ${pkgName}!\nExpected: ${expectedSig}\nActual:   ${actualSigs.join(', ')}`
+        `Signature mismatch for ${pkgName}!\nExpected: ${[...expectedSigs].join(', ')}\nActual:   ${actualSigs.join(', ')}`
       );
       return false;
     }
 
-    this.ctx.log(`Verified official signature for ${pkgName} (${expectedSig.substring(0, 12)}...)`);
+    this.ctx.log(`Verified official signature for ${pkgName}`);
     return true;
   }
 }
