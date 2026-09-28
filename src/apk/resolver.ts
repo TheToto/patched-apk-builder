@@ -95,8 +95,13 @@ export class ApkResolver {
     if (app.uptodownDlurl) sourcesToTry.push({ url: app.uptodownDlurl, providerName: 'uptodown' });
     if (app.directDlurl) sourcesToTry.push({ url: app.directDlurl, providerName: 'direct' });
 
+    // Universal fallbacks for apps with standard package names:
+    if (!app.aptoideDlurl) sourcesToTry.push({ url: '', providerName: 'aptoide' });
+    if (!app.apkpureDlurl) sourcesToTry.push({ url: '', providerName: 'apkpure' });
+    if (!app.apkcomboDlurl) sourcesToTry.push({ url: '', providerName: 'apkcombo' });
+
     if (sourcesToTry.length === 0) {
-      throw new Error(`No download URL configured for app: ${app.name} (${app.slug})`);
+      throw new Error(`No download URL or compatible provider found for app: ${app.name} (${app.slug})`);
     }
 
     let downloadResult: ApkProviderResult | null = null;
