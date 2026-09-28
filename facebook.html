@@ -19,11 +19,11 @@
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">Version</span>
-                <span class="info-value">v562.0.0.51.73</span>
+                <span class="info-value">vlatest (lsp)</span>
             </div>
             <div class="info-item">
                 <span class="info-label">Patch Source</span>
-                <span class="info-value">LSPatch: <a href="https://github.com/gnadgnaoh/NexAlloy" class="brand-link" target="_blank" rel="noopener">gnadgnaoh</a></span>
+                <span class="info-value">LSPatch: <a href="https://github.com/Xposed-Modules-Repo/tn.loukious.facebookappadsremover" class="brand-link" target="_blank" rel="noopener">FBAR</a></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Architecture</span>
@@ -35,14 +35,20 @@
             </div>
         </div>
         
-        <div class="filename-raw">
-            File: <code>facebook-gnadgnaoh-v562.0.0.51.73-arm64-v8a.apk</code>
-        </div>
         
-        <div class="actions">
-            <a href="https://apk.thetoto.fr/releases/download/23/facebook-gnadgnaoh-v562.0.0.51.73-arm64-v8a.apk" class="btn btn-download">Download APK</a>
-            <button class="btn-qr" onclick="document.getElementById('qr-modal-apk').classList.add('active')" title="Show APK QR Code">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        
+        <div class="download-card apk-card">
+            <div class="download-card-header">
+                <span class="card-badge apk-badge">📱 Standalone APK (Non-Root)</span>
+            </div>
+            <div class="filename-raw">
+                File: <code>facebook-fbar-vlatest-lsp-arm64-v8a.apk</code>
+            </div>
+            <div class="actions-group">
+                <div class="action-row">
+                    <a href="https://apk.thetoto.fr/releases/download/98/facebook-fbar-vlatest-lsp-arm64-v8a.apk" class="btn btn-download">Download APK</a>
+                    <button class="btn-qr" onclick="document.getElementById('qr-modal-apk').classList.add('active')" title="Show APK QR Code">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <rect width="5" height="5" x="3" y="3" rx="1"/>
     <rect width="5" height="5" x="16" y="3" rx="1"/>
     <rect width="5" height="5" x="3" y="16" rx="1"/>
@@ -56,55 +62,79 @@
     <path d="M21 12v.01"/>
     <path d="M12 21v-1"/>
 </svg>
-            </button>
-
-            <a href="obtainium://app/%7B%22id%22%3A%20%22com.facebook.katana%22%2C%20%22url%22%3A%20%22https%3A%2F%2Fapk.thetoto.fr%2Ffacebook.html%22%2C%20%22author%22%3A%20%22TheToto%22%2C%20%22name%22%3A%20%22Facebook%22%2C%20%22preferredApkIndex%22%3A%200%2C%20%22additionalSettings%22%3A%20%22%7B%5C%22versionExtractionRegEx%5C%22%3A%20%5C%22-v%28%5B0-9a-zA-Z.-%5D%2B%29-%28arm64-v8a%7Carm-v7a%7Cx86_64%7Cx86%7Call%29%5C%5C%5C%5C.apk%5C%22%2C%20%5C%22matchGroupToUse%5C%22%3A%20%5C%22%241%5C%22%2C%20%5C%22defaultPseudoVersioningMethod%5C%22%3A%20%5C%22APKLinkHash%5C%22%2C%20%5C%22appName%5C%22%3A%20%5C%22Facebook%5C%22%2C%20%5C%22appAuthor%5C%22%3A%20%5C%22TheToto%5C%22%2C%20%5C%22about%5C%22%3A%20%5C%22Facebook%20gnadgnaoh%5C%22%7D%22%7D" class="badge-obtainium">
-                <img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium">
-            </a>
-            <button class="btn-qr" onclick="document.getElementById('qr-modal-obt').classList.add('active')" title="Show Obtainium QR Code">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <rect width="5" height="5" x="3" y="3" rx="1"/>
-    <rect width="5" height="5" x="16" y="3" rx="1"/>
-    <rect width="5" height="5" x="3" y="16" rx="1"/>
-    <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
-    <path d="M21 21v.01"/>
-    <path d="M12 7v3a2 2 0 0 1-2 2H7"/>
-    <path d="M3 12h.01"/>
-    <path d="M12 3h.01"/>
-    <path d="M12 16v.01"/>
-    <path d="M16 12h1"/>
-    <path d="M21 12v.01"/>
-    <path d="M12 21v-1"/>
-</svg>
-            </button>
-        </div>
-        
-        <div class="patches-section">
-            <h3 class="patches-title">⚙️ Applied Patches (1/1)</h3>
-            <div class="patches-list">
-
-                <div class="patch-card applied">
-                    <div class="patch-header">
-                        <span class="patch-name">Xposed Module Injection</span>
-                        <span class="patch-status status-applied">Explicitly Enabled (Default)</span>
-                    </div>
-                    <div class="patch-desc">Injected gnadgnaoh-NexAlloy-latest.apk module into the APK via LSPatch.</div>
+                    </button>
                 </div>
+                <div class="action-row">
+                    <a href="obtainium://app/%7B%22id%22%3A%22com.facebook.katana%22%2C%22url%22%3A%22https%3A%2F%2Fapk.thetoto.fr%2Ffacebook.html%22%2C%22author%22%3A%22TheToto%22%2C%22name%22%3A%22Facebook%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22versionExtractionRegEx%5C%22%3A%5C%22-v(%5B0-9a-zA-Z._-%5D%2B)-(%3F%3Aarm64-v8a%7Carm-v7a%7Cx86_64%7Cx86%7Call)%5C%5C%5C%5C.apk%5C%22%2C%5C%22matchGroupToUse%5C%22%3A%5C%22%241%5C%22%2C%5C%22defaultPseudoVersioningMethod%5C%22%3A%5C%22APKLinkHash%5C%22%2C%5C%22appName%5C%22%3A%5C%22Facebook%5C%22%2C%5C%22appAuthor%5C%22%3A%5C%22TheToto%5C%22%2C%5C%22about%5C%22%3A%5C%22Facebook%20FBAR%5C%22%7D%22%7D" class="badge-obtainium">
+                        <img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium">
+                    </a>
+                    <button class="btn-qr" onclick="document.getElementById('qr-modal-obt').classList.add('active')" title="Show Obtainium QR Code">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="5" height="5" x="3" y="3" rx="1"/>
+    <rect width="5" height="5" x="16" y="3" rx="1"/>
+    <rect width="5" height="5" x="3" y="16" rx="1"/>
+    <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
+    <path d="M21 21v.01"/>
+    <path d="M12 7v3a2 2 0 0 1-2 2H7"/>
+    <path d="M3 12h.01"/>
+    <path d="M12 3h.01"/>
+    <path d="M12 16v.01"/>
+    <path d="M16 12h1"/>
+    <path d="M21 12v.01"/>
+    <path d="M12 21v-1"/>
+</svg>
+                    </button>
+                </div>
+            </div>
+        </div>
 
+        
+        <div class="download-card module-card">
+            <div class="download-card-header">
+                <span class="card-badge module-badge">⚡ Magisk / KernelSU / APatch Module (Root)</span>
+            </div>
+            <div class="filename-raw">
+                File: <code>facebook-fbar-module-vlatest-lsp-arm64-v8a.zip</code>
+            </div>
+            <div class="actions-group">
+                <div class="action-row">
+                    <a href="https://apk.thetoto.fr/releases/download/98/facebook-fbar-module-vlatest-lsp-arm64-v8a.zip" class="btn btn-download-module">Download Module (.zip)</a>
+                    <button class="btn-qr" onclick="document.getElementById('qr-modal-module').classList.add('active')" title="Show Module QR Code">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="5" height="5" x="3" y="3" rx="1"/>
+    <rect width="5" height="5" x="16" y="3" rx="1"/>
+    <rect width="5" height="5" x="3" y="16" rx="1"/>
+    <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
+    <path d="M21 21v.01"/>
+    <path d="M12 7v3a2 2 0 0 1-2 2H7"/>
+    <path d="M3 12h.01"/>
+    <path d="M12 3h.01"/>
+    <path d="M12 16v.01"/>
+    <path d="M16 12h1"/>
+    <path d="M21 12v.01"/>
+    <path d="M12 21v-1"/>
+</svg>
+                    </button>
+                </div>
+            </div>
+            <div class="module-notice">
+                <span class="notice-icon">💡</span>
+                <span>Download the <code>.zip</code> file, then open <strong>KernelSU</strong> (or Magisk / APatch) &rarr; <strong>Modules</strong> tab &rarr; <strong>Install module</strong>. Subsequent updates will be managed <strong>automatically</strong> inside the app!</span>
             </div>
         </div>
 
         
         <footer>
-            <p>Source code and CI on GitHub: <a href="https://github.com/TheToto/revanced-apk-builder" target="_blank" rel="noopener">TheToto/revanced-apk-builder</a></p>
+            <p>Source code and CI on GitHub: <a href="https://github.com/TheToto/patched-apk-builder" target="_blank" rel="noopener">TheToto/patched-apk-builder</a></p>
         </footer>
     </div>
 
+    
     <div class="modal-overlay" id="qr-modal-apk" onclick="if(event.target === this) this.classList.remove('active')">
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('qr-modal-apk').classList.remove('active')">&times;</button>
             <p style="margin: 0 0 1.5rem 0; font-weight: 600; font-size: 1.1rem; color: var(--text-primary);">Scan to Download APK</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=1&data=https%3A%2F%2Fapk.thetoto.fr%2Freleases%2Fdownload%2F23%2Ffacebook-gnadgnaoh-v562.0.0.51.73-arm64-v8a.apk" alt="APK QR Code" style="background: white; padding: 0.5rem; border-radius: 12px; width: 280px; height: 280px;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=1&data=https%3A%2F%2Fapk.thetoto.fr%2Freleases%2Fdownload%2F98%2Ffacebook-fbar-vlatest-lsp-arm64-v8a.apk" alt="APK QR Code" style="background: white; padding: 0.5rem; border-radius: 12px; width: 280px; height: 280px;">
         </div>
     </div>
 
@@ -112,8 +142,18 @@
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('qr-modal-obt').classList.remove('active')">&times;</button>
             <p style="margin: 0 0 1.5rem 0; font-weight: 600; font-size: 1.1rem; color: var(--text-primary);">Scan to add in Obtainium</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=1&data=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2520%2522com.facebook.katana%2522%252C%2520%2522url%2522%253A%2520%2522https%253A%252F%252Fapk.thetoto.fr%252Ffacebook.html%2522%252C%2520%2522author%2522%253A%2520%2522TheToto%2522%252C%2520%2522name%2522%253A%2520%2522Facebook%2522%252C%2520%2522preferredApkIndex%2522%253A%25200%252C%2520%2522additionalSettings%2522%253A%2520%2522%257B%255C%2522versionExtractionRegEx%255C%2522%253A%2520%255C%2522-v%2528%255B0-9a-zA-Z.-%255D%252B%2529-%2528arm64-v8a%257Carm-v7a%257Cx86_64%257Cx86%257Call%2529%255C%255C%255C%255C.apk%255C%2522%252C%2520%255C%2522matchGroupToUse%255C%2522%253A%2520%255C%2522%25241%255C%2522%252C%2520%255C%2522defaultPseudoVersioningMethod%255C%2522%253A%2520%255C%2522APKLinkHash%255C%2522%252C%2520%255C%2522appName%255C%2522%253A%2520%255C%2522Facebook%255C%2522%252C%2520%255C%2522appAuthor%255C%2522%253A%2520%255C%2522TheToto%255C%2522%252C%2520%255C%2522about%255C%2522%253A%2520%255C%2522Facebook%2520gnadgnaoh%255C%2522%257D%2522%257D" alt="Obtainium QR Code" style="background: white; padding: 0.5rem; border-radius: 12px; width: 280px; height: 280px;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=1&data=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.facebook.katana%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fapk.thetoto.fr%252Ffacebook.html%2522%252C%2522author%2522%253A%2522TheToto%2522%252C%2522name%2522%253A%2522Facebook%2522%252C%2522preferredApkIndex%2522%253A0%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522versionExtractionRegEx%255C%2522%253A%255C%2522-v(%255B0-9a-zA-Z._-%255D%252B)-(%253F%253Aarm64-v8a%257Carm-v7a%257Cx86_64%257Cx86%257Call)%255C%255C%255C%255C.apk%255C%2522%252C%255C%2522matchGroupToUse%255C%2522%253A%255C%2522%25241%255C%2522%252C%255C%2522defaultPseudoVersioningMethod%255C%2522%253A%255C%2522APKLinkHash%255C%2522%252C%255C%2522appName%255C%2522%253A%255C%2522Facebook%255C%2522%252C%255C%2522appAuthor%255C%2522%253A%255C%2522TheToto%255C%2522%252C%255C%2522about%255C%2522%253A%255C%2522Facebook%2520FBAR%255C%2522%257D%2522%257D" alt="Obtainium QR Code" style="background: white; padding: 0.5rem; border-radius: 12px; width: 280px; height: 280px;">
         </div>
     </div>
+
+    
+    <div class="modal-overlay" id="qr-modal-module" onclick="if(event.target === this) this.classList.remove('active')">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('qr-modal-module').classList.remove('active')">&times;</button>
+            <p style="margin: 0 0 1.5rem 0; font-weight: 600; font-size: 1.1rem; color: var(--text-primary);">Scan to Download Magisk/KernelSU Module (.zip)</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=1&data=https%3A%2F%2Fapk.thetoto.fr%2Freleases%2Fdownload%2F98%2Ffacebook-fbar-module-vlatest-lsp-arm64-v8a.zip" alt="Module QR Code" style="background: white; padding: 0.5rem; border-radius: 12px; width: 280px; height: 280px;">
+        </div>
+    </div>
+
 </body>
 </html>

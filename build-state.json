@@ -1,0 +1,91 @@
+{
+  "apps": {
+    "music": {
+      "version": "9.15.51",
+      "patchesTag": "",
+      "cliTag": "",
+      "fingerprint": "",
+      "arch": "all",
+      "buildMode": "apk",
+      "updatedAt": "2026-09-28T15:01:55.431Z"
+    },
+    "reddit": {
+      "version": "2026.14.0",
+      "patchesTag": "",
+      "cliTag": "",
+      "fingerprint": "",
+      "arch": "all",
+      "buildMode": "apk",
+      "updatedAt": "2026-09-28T15:01:55.431Z"
+    },
+    "youtube": {
+      "version": "21.16.256",
+      "patchesTag": "",
+      "cliTag": "",
+      "fingerprint": "",
+      "arch": "all",
+      "buildMode": "apk",
+      "updatedAt": "2026-09-28T15:01:55.431Z"
+    },
+    "youtube-experimental": {
+      "version": "21.38.123",
+      "patchesTag": "",
+      "cliTag": "",
+      "fingerprint": "",
+      "arch": "all",
+      "buildMode": "apk",
+      "updatedAt": "2026-09-28T15:01:55.431Z"
+    },
+    "facebook:arm64-v8a": {
+      "version": "latest",
+      "patchesTag": "22-1.21",
+      "cliTag": "lspatch",
+      "fingerprint": "ac80dbe3951a7e7508267a9393c52c0b6611e956884df47020389e65129d7b9a",
+      "buildMode": "both",
+      "artifacts": {
+        "apk": "facebook-fbar-vlatest-lsp-arm64-v8a.apk",
+        "module": "facebook-fbar-module-vlatest-lsp-arm64-v8a.zip"
+      },
+      "arch": "arm64-v8a",
+      "updatedAt": "2026-09-28T15:02:32.482Z"
+    },
+    "gboard:arm64-v8a": {
+      "version": "18.0.3.954559732-release-arm64-v8a",
+      "patchesTag": "v3.11.0",
+      "cliTag": "v1.17.0",
+      "fingerprint": "4b48898e9a324ec7999b0ad7b1979209d44557ec8d8a438b122a5d75942c4587",
+      "buildMode": "both",
+      "artifacts": {
+        "apk": "gboard-jasonwu1994-v18.0.3.954559732-p3.11.0-arm64-v8a.apk",
+        "module": "gboard-jasonwu1994-module-v18.0.3.954559732-p3.11.0-arm64-v8a.zip"
+      },
+      "arch": "arm64-v8a",
+      "updatedAt": "2026-09-28T15:02:11.577Z"
+    },
+    "niagaralauncher:arm64-v8a": {
+      "version": "1.16.24",
+      "patchesTag": "v1.44.1",
+      "cliTag": "v1.17.0",
+      "fingerprint": "507ccb31b4d9ba9c18ea83e2eaf0f60c63dbf26f860eca294d523828ca3e7d72",
+      "buildMode": "apk",
+      "artifacts": {
+        "apk": "niagaralauncher-hoo-dles-v1.16.24-p1.44.1-arm64-v8a.apk"
+      },
+      "arch": "arm64-v8a",
+      "updatedAt": "2026-09-28T15:02:09.394Z"
+    },
+    "protonvpn:arm64-v8a": {
+      "version": "5.19.43.0",
+      "patchesTag": "v1.44.1",
+      "cliTag": "v1.17.0",
+      "fingerprint": "95e832eeae4cab5b83b7ed87e4b104222b01d212c74c371a26f19fc40e697ce4",
+      "buildMode": "apk",
+      "artifacts": {
+        "apk": "protonvpn-hoo-dles-v5.19.43.0-p1.44.1-arm64-v8a.apk"
+      },
+      "arch": "arm64-v8a",
+      "updatedAt": "2026-09-28T15:02:19.503Z"
+    }
+  },
+  "lastVersionCode": 98
+}
