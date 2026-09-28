@@ -7,7 +7,6 @@ import { loadConfig } from './config/loader.js';
 import { ChangeDetector } from './ci/change-detector.js';
 import { BuildOrchestrator } from './orchestrator.js';
 import { WebGenerator } from './web/generator.js';
-import { CiNotifier } from './ci/notifier.js';
 import { AaptTool } from './tools/aapt.js';
 import { ApkSigner } from './tools/apk-signer.js';
 import { ApkResolver } from './apk/resolver.js';
@@ -108,17 +107,6 @@ program
     }
   });
 
-// Command: notify
-program
-  .command('notify')
-  .description('Send Telegram release notification')
-  .option('--token <token>', 'Telegram bot token')
-  .option('--chat <chat>', 'Telegram chat ID', '@rvc_magisk')
-  .action(async (options) => {
-    const token = options.token || process.env.TG_TOKEN || '';
-    const notifier = new CiNotifier(ctx);
-    await notifier.notifyTelegram(token, options.chat);
-  });
 
 // Command: sig
 program
