@@ -49,6 +49,9 @@ export const rawAppConfigSchema = z.object({
   'archive-dlurl': z.string().optional(),
   'uptodown-dlurl': z.string().optional(),
   'apkpure-dlurl': z.string().optional(),
+  'aptoide-dlurl': z.string().optional(),
+  'apkcombo-dlurl': z.string().optional(),
+  'github-dlurl': z.string().optional(),
   'direct-dlurl': z.string().optional(),
   'discord-dlurl': z.string().optional()
 });

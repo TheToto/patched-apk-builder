@@ -12,10 +12,44 @@ export class ApkBuilder {
     this.signer = new ApkSigner(this.ctx);
   }
 
-  public stripUnwantedLibs(inputApk: string, outputApk: string, targetArch: ConcreteArch, isModule: boolean): void {
+  public async stripUnwantedLibs(inputApk: string, outputApk: string, targetArch: ConcreteArch, isModule: boolean): Promise<void> {
     fs.copyFileSync(inputApk, outputApk);
-    const zip = new AdmZip(outputApk);
+    if (!isModule) {
+      // Non-root APKs: do not mutate the input APK prior to patching
+      // as removing entries breaks APK Signature Scheme v2/v3 blocks required by patches like "Spoof signature"
+      return;
+    }
 
+    if (isModule) {
+      try {
+        await this.ctx.exec('zip', ['-d', outputApk, 'lib/*'], { silent: true });
+        return;
+      } catch {
+        // Fallback to AdmZip if zip CLI fails
+      }
+    } else {
+      const patterns: string[] = [];
+      if (targetArch === 'arm64-v8a') {
+        patterns.push('lib/armeabi-v7a/*', 'lib/x86/*', 'lib/x86_64/*');
+      } else if (targetArch === 'arm-v7a') {
+        patterns.push('lib/arm64-v8a/*', 'lib/x86/*', 'lib/x86_64/*');
+      } else if (targetArch === 'x86') {
+        patterns.push('lib/arm64-v8a/*', 'lib/armeabi-v7a/*', 'lib/x86_64/*');
+      } else if (targetArch === 'x86_64') {
+        patterns.push('lib/arm64-v8a/*', 'lib/armeabi-v7a/*', 'lib/x86/*');
+      }
+      try {
+        for (const pat of patterns) {
+          await this.ctx.exec('zip', ['-d', outputApk, pat], { silent: true });
+        }
+        return;
+      } catch {
+        // Fallback to AdmZip
+      }
+    }
+
+    // Fallback using AdmZip
+    const zip = new AdmZip(outputApk);
     const entries = zip.getEntries();
     let modified = false;
 
@@ -23,31 +57,16 @@ export class ApkBuilder {
       if (!entry.entryName.startsWith('lib/')) continue;
 
       if (isModule) {
-        // Magisk modules do not need bundled libs in base.apk
         zip.deleteFile(entry.entryName);
         modified = true;
       } else {
         const name = entry.entryName;
-        if (targetArch === 'arm64-v8a') {
-          if (name.includes('armeabi-v7a/') || name.includes('x86/') || name.includes('x86_64/')) {
-            zip.deleteFile(name);
-            modified = true;
-          }
-        } else if (targetArch === 'arm-v7a') {
-          if (name.includes('arm64-v8a/') || name.includes('x86/') || name.includes('x86_64/')) {
-            zip.deleteFile(name);
-            modified = true;
-          }
-        } else if (targetArch === 'x86') {
-          if (name.includes('arm64-v8a/') || name.includes('armeabi-v7a/') || name.includes('x86_64/')) {
-            zip.deleteFile(name);
-            modified = true;
-          }
-        } else if (targetArch === 'x86_64') {
-          if (name.includes('arm64-v8a/') || name.includes('armeabi-v7a/') || name.includes('x86/')) {
-            zip.deleteFile(name);
-            modified = true;
-          }
+        if (targetArch === 'arm64-v8a' && (name.includes('armeabi-v7a/') || name.includes('x86/') || name.includes('x86_64/'))) {
+          zip.deleteFile(name);
+          modified = true;
+        } else if (targetArch === 'arm-v7a' && (name.includes('arm64-v8a/') || name.includes('x86/') || name.includes('x86_64/'))) {
+          zip.deleteFile(name);
+          modified = true;
         }
       }
     }

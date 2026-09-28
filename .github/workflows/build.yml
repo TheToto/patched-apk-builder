@@ -125,7 +125,7 @@ jobs:
   # Deployment, Releases, Web and Notifications
   deploy:
     needs: [build-matrix, build-direct]
-    if: always() && (needs.build-matrix.result == 'success' || needs.build-direct.result == 'success')
+    if: always() && !cancelled() && (needs.build-matrix.result == 'success' || needs.build-matrix.result == 'failure' || needs.build-direct.result == 'success')
     permissions: write-all
     runs-on: ubuntu-latest
     steps:

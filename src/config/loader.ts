@@ -85,6 +85,9 @@ export function loadConfig(configFilePath: string): FullConfig {
       archiveDlurl: parsedApp['archive-dlurl'],
       uptodownDlurl: parsedApp['uptodown-dlurl'],
       apkpureDlurl: parsedApp['apkpure-dlurl'],
+      aptoideDlurl: parsedApp['aptoide-dlurl'],
+      apkcomboDlurl: parsedApp['apkcombo-dlurl'],
+      githubDlurl: parsedApp['github-dlurl'],
       directDlurl: parsedApp['direct-dlurl'],
       discordDlurl: parsedApp['discord-dlurl']
     };

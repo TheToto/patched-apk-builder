@@ -20,12 +20,13 @@ export class ApkMirrorProvider implements ApkProvider {
     }
 
     const baseUrl = query.sourceUrl.replace(/\/+$/, '');
-    const versionFormatted = query.version.replace(/\s+/g, '-').replace(/\./g, '-');
+    const cleanVersion = query.version.replace(/-release-(?:arm64-v8a|arm-v7a|x86_64|x86|universal)$/i, '');
+    const versionFormatted = cleanVersion.replace(/\s+/g, '-').replace(/\./g, '-');
     const appSlug = baseUrl.split('/').pop() || '';
 
     // Step 1: Request release page for specific version
-    const releaseUrl = `${baseUrl}/${appSlug}-${versionFormatted}-release/`;
-    let releaseHtml: string;
+    let releaseUrl = `${baseUrl}/${appSlug}-${versionFormatted}-release/`;
+    let releaseHtml: string = '';
     try {
       releaseHtml = await this.http.fetchText(releaseUrl, {
         headers: {
@@ -34,7 +35,28 @@ export class ApkMirrorProvider implements ApkProvider {
         }
       });
     } catch (err: any) {
-      throw new Error(`APKMirror release page fetch failed for ${releaseUrl}: ${err.message}`);
+      // If failed, try discovering the full title slug (e.g. gboard -> gboard-the-google-keyboard)
+      try {
+        const baseHtml = await this.http.fetchText(baseUrl, {
+          headers: { Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
+        });
+        const $base = cheerio.load(baseHtml);
+        const titleText = $base('h1.marginZero, h1').first().text().trim();
+        if (titleText) {
+          const fullSlug = titleText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          releaseUrl = `${baseUrl}/${fullSlug}-${versionFormatted}-release/`;
+          releaseHtml = await this.http.fetchText(releaseUrl, {
+            headers: {
+              Referer: baseUrl,
+              Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            }
+          });
+        } else {
+          throw err;
+        }
+      } catch {
+        throw new Error(`APKMirror release page fetch failed for ${releaseUrl}: ${err.message}`);
+      }
     }
 
     const $release = cheerio.load(releaseHtml);

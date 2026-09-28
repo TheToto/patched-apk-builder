@@ -43,6 +43,9 @@ export interface AppConfig {
   archiveDlurl?: string;
   uptodownDlurl?: string;
   apkpureDlurl?: string;
+  aptoideDlurl?: string;
+  apkcomboDlurl?: string;
+  githubDlurl?: string;
   directDlurl?: string;
   discordDlurl?: string;
 }

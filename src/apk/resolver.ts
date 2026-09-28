@@ -8,6 +8,10 @@ import { ArchiveProvider } from './providers/archive.js';
 import { ApkMirrorProvider } from './providers/apkmirror.js';
 import { UptodownProvider } from './providers/uptodown.js';
 import { DirectProvider } from './providers/direct.js';
+import { AptoideProvider } from './providers/aptoide.js';
+import { ApkPureProvider } from './providers/apkpure.js';
+import { ApkComboProvider } from './providers/apkcombo.js';
+import { GitHubReleaseProvider } from './providers/github.js';
 import { ApkEditor } from '../tools/apk-editor.js';
 import { ApkSigner } from '../tools/apk-signer.js';
 
@@ -19,7 +23,11 @@ export class ApkResolver {
   constructor(private ctx: AppContext) {
     this.providers = [
       new ArchiveProvider(),
+      new GitHubReleaseProvider(),
+      new AptoideProvider(),
       new ApkMirrorProvider(),
+      new ApkPureProvider(),
+      new ApkComboProvider(),
       new UptodownProvider(),
       new DirectProvider()
     ];
@@ -43,11 +51,13 @@ export class ApkResolver {
     }
 
     // List sources to try in priority order:
-    // (Archive.org first if available because it's fastest and 100% reliable without captcha,
-    // then APKMirror, Uptodown, Direct)
     const sourcesToTry: Array<{ url: string; providerName?: string }> = [];
+    if (app.githubDlurl) sourcesToTry.push({ url: app.githubDlurl, providerName: 'github' });
     if (app.archiveDlurl) sourcesToTry.push({ url: app.archiveDlurl, providerName: 'archive' });
     if (app.apkmirrorDlurl) sourcesToTry.push({ url: app.apkmirrorDlurl, providerName: 'apkmirror' });
+    if (app.apkpureDlurl) sourcesToTry.push({ url: app.apkpureDlurl, providerName: 'apkpure' });
+    if (app.aptoideDlurl) sourcesToTry.push({ url: app.aptoideDlurl, providerName: 'aptoide' });
+    if (app.apkcomboDlurl) sourcesToTry.push({ url: app.apkcomboDlurl, providerName: 'apkcombo' });
     if (app.uptodownDlurl) sourcesToTry.push({ url: app.uptodownDlurl, providerName: 'uptodown' });
     if (app.directDlurl) sourcesToTry.push({ url: app.directDlurl, providerName: 'direct' });
 

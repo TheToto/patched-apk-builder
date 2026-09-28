@@ -179,7 +179,7 @@ export class BuildOrchestrator {
         `${pkgName}-${cleanVer}-${archClean}-${mode}.stripped.apk`
       );
 
-      this.apkBuilder.stripUnwantedLibs(stockApk, strippedStock, arch, isModule);
+      await this.apkBuilder.stripUnwantedLibs(stockApk, strippedStock, arch, isModule);
 
       const patchedTemp = path.join(
         this.ctx.tempDir,
