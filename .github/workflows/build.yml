@@ -222,13 +222,9 @@ jobs:
             fi
           fi
 
-      - name: Generate Static Web Pages
+      - name: Commit to Update Branch
         env:
           NEXT_VER_CODE: ${{ needs.prepare.outputs.NEXT_VER_CODE }}
-        run: |
-          node dist/index.js web --out /tmp/pages
-
-      - name: Commit to Update Branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -236,7 +232,9 @@ jobs:
           # Preserve existing files on update branch and checkout cleanly
           git checkout -B update origin/update || git switch --discard-changes --orphan update
 
-          cp -a /tmp/pages/* . 2>/dev/null || true
+          # Generate static pages directly into update branch working directory
+          node dist/index.js web --out .
+
           cp -f /tmp/build-state.json build-state.json 2>/dev/null || true
           cp -f /tmp/build.md build.md 2>/dev/null || true
           [ -f "build-state.json" ] && git add build-state.json

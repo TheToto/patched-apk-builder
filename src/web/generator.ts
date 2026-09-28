@@ -165,7 +165,8 @@ ${appCardsHtml}        </div>
     owner: string,
     repoName: string
   ): Promise<void> {
-    const pageUrl = `${baseUrl}/${app.slug}.html`;
+    const htmlFilename = `${app.slug}.html`;
+    const pageUrl = `${baseUrl}/${htmlFilename}`;
     const iconFilename = `${app.slug}.png`;
     const iconOutPath = path.join(outDir, iconFilename);
 
@@ -224,6 +225,14 @@ ${appCardsHtml}        </div>
       }
     }
     const latestModules = Array.from(modulesByArch.values());
+
+    // If no new builds were produced for this app in this run, but an existing page already exists,
+    // preserve the existing page so we don't break existing download links or Obtainium!
+    const targetHtmlPath = path.join(outDir, htmlFilename);
+    if (latestApks.length === 0 && latestModules.length === 0 && fs.existsSync(targetHtmlPath)) {
+      this.ctx.log(`Preserving existing ${htmlFilename} (no new build in this run)`);
+      return;
+    }
 
     // Copy or extract icon
     const staticIcon = path.join(this.ctx.iconsDir, iconFilename);
