@@ -57,7 +57,7 @@ export class ApkResolver {
     this.providers = [
       new ArchiveProvider(),
       new GitHubReleaseProvider(),
-      new AptoideProvider(),
+      //new AptoideProvider(),
       new ApkMirrorProvider(),
       new ApkPureProvider(),
       new ApkComboProvider(),
