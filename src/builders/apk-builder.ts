@@ -200,6 +200,9 @@ export class ApkBuilder {
     // User-configured inclusions & exclusions
     if (app.includedPatches && app.includedPatches.length > 0) {
       for (const p of app.includedPatches) {
+        if (mode === 'module' && microgPatchName && p.toLowerCase() === microgPatchName.toLowerCase()) {
+          continue;
+        }
         args.push('-e', p);
       }
     }
