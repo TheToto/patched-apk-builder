@@ -149,5 +149,5 @@ apkmirror-dlurl = "https://www.apkmirror.com/apk/google-inc/gboard"
 apkpure-dlurl = "https://apkpure.com/gboard-the-google-keyboard/com.google.android.inputmethod.latin"
 aptoide-dlurl = "https://en.aptoide.com/app/com.google.android.inputmethod.latin"
 arch = "arm64-v8a"
-build-mode = "both"
+build-mode = "apk" # Doesn't work well with magisk module. Some menues not showing because of no custom package name
 
