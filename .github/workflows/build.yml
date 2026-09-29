@@ -229,11 +229,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # Save config.toml before switching branches (it won't exist on update branch)
+          cp config.toml /tmp/config.toml
+
           # Preserve existing files on update branch and checkout cleanly
           git checkout -B update origin/update || git switch --discard-changes --orphan update
 
+          # Restore config.toml for web generation
+          cp /tmp/config.toml config.toml
+
           # Generate static pages directly into update branch working directory
           node dist/index.js web --out .
+
+          # Remove config.toml so it doesn't get committed to update branch
+          rm -f config.toml
 
           cp -f /tmp/build-state.json build-state.json 2>/dev/null || true
           cp -f /tmp/build.md build.md 2>/dev/null || true
