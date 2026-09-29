@@ -72,7 +72,19 @@
       },
       "arch": "arm64-v8a",
       "updatedAt": "2026-09-29T11:59:10.476Z"
+    },
+    "niagaralauncher:arm64-v8a": {
+      "version": "1.16.24",
+      "patchesTag": "v1.45.0",
+      "cliTag": "v1.17.0",
+      "fingerprint": "362afcd6aff19aa9af33a11d34713214e48c55d8a3a02b1822f5ad579ad545fd",
+      "buildMode": "apk",
+      "artifacts": {
+        "apk": "niagaralauncher-hoo-dles-v1.16.24-p1.45.0-arm64-v8a.apk"
+      },
+      "arch": "arm64-v8a",
+      "updatedAt": "2026-09-29T12:19:50.866Z"
     }
   },
-  "lastVersionCode": 101
+  "lastVersionCode": 102
 }
