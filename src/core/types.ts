@@ -34,6 +34,7 @@ export interface AppConfig {
   includedPatches?: string[];
   excludedPatches?: string[];
   exclusivePatches: boolean;
+  enableMicrog?: boolean;
   patcherArgs?: string;
   includeStock: StockInclude;
   enableUpdateChecks: boolean;

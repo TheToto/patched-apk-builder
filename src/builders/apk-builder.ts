@@ -173,8 +173,20 @@ export class ApkBuilder {
 
     // Build-mode specific microg & branding rules
     if (mode === 'apk') {
-      if (microgPatchName) {
-        args.push('-e', microgPatchName);
+      if (app.enableMicrog && microgPatchName) {
+        const isExcluded = (app.excludedPatches || []).some(
+          (p) => p.toLowerCase() === microgPatchName.toLowerCase()
+        );
+        if (!isExcluded) {
+          args.push('-e', microgPatchName);
+        }
+      } else if (!app.enableMicrog && microgPatchName) {
+        const isIncluded = (app.includedPatches || []).some(
+          (p) => p.toLowerCase() === microgPatchName.toLowerCase()
+        );
+        if (!isIncluded) {
+          args.push('-d', microgPatchName);
+        }
       }
     } else if (mode === 'module') {
       if (microgPatchName) {
@@ -188,14 +200,12 @@ export class ApkBuilder {
     // User-configured inclusions & exclusions
     if (app.includedPatches && app.includedPatches.length > 0) {
       for (const p of app.includedPatches) {
-        if (microgPatchName && p.toLowerCase() === microgPatchName.toLowerCase()) continue;
         args.push('-e', p);
       }
     }
 
     if (app.excludedPatches && app.excludedPatches.length > 0) {
       for (const p of app.excludedPatches) {
-        if (microgPatchName && p.toLowerCase() === microgPatchName.toLowerCase()) continue;
         args.push('-d', p);
       }
     }

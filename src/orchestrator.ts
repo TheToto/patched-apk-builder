@@ -160,11 +160,28 @@ export class BuildOrchestrator {
         isExp
       );
 
+      // Detect microg patch if any to reflect in patches.json summary
+      const microgMatch = allPatchesListRaw.match(/Name:\s*([^\n]*(?:gmscore|microg)[^\n]*)/i);
+      const microgPatchName = microgMatch && microgMatch[1] ? microgMatch[1].trim() : null;
+
+      const effectiveIncluded = [...(app.includedPatches || [])];
+      const effectiveExcluded = [...(app.excludedPatches || [])];
+
+      if (microgPatchName) {
+        const isInc = effectiveIncluded.some((p) => p.toLowerCase() === microgPatchName.toLowerCase());
+        const isExc = effectiveExcluded.some((p) => p.toLowerCase() === microgPatchName.toLowerCase());
+        if (app.enableMicrog && !isInc && !isExc) {
+          effectiveIncluded.push(microgPatchName);
+        } else if (!app.enableMicrog && !isInc && !isExc) {
+          effectiveExcluded.push(microgPatchName);
+        }
+      }
+
       // Save patches.json alongside artifacts
       const patchesSummary = this.inspector.buildPatchesSummary(
         allPatchesListRaw,
-        app.includedPatches,
-        app.excludedPatches,
+        effectiveIncluded,
+        effectiveExcluded,
         app.exclusivePatches
       );
       const patchesJsonPath = path.join(

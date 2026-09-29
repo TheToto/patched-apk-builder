@@ -40,6 +40,8 @@ export const rawAppConfigSchema = z.object({
   'included-patches': patchListSchema,
   'excluded-patches': patchListSchema,
   'exclusive-patches': z.union([z.boolean(), z.string().transform((v) => v.toLowerCase() === 'true')]).default(false),
+  'enable-microg': z.union([z.boolean(), z.string().transform((v) => v.toLowerCase() === 'true')]).optional(),
+  microg: z.union([z.boolean(), z.string().transform((v) => v.toLowerCase() === 'true')]).optional(),
   'patcher-args': z.string().optional(),
   'include-stock': z.enum(['merged', 'split', 'disable']).default('merged'),
   'enable-update-checks': z.union([z.boolean(), z.string().transform((v) => v.toLowerCase() === 'true')]).default(false),

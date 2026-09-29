@@ -76,6 +76,7 @@ export function loadConfig(configFilePath: string): FullConfig {
       includedPatches: parsedApp['included-patches'],
       excludedPatches: parsedApp['excluded-patches'],
       exclusivePatches: parsedApp['exclusive-patches'],
+      enableMicrog: parsedApp['enable-microg'] ?? parsedApp.microg ?? false,
       patcherArgs: parsedApp['patcher-args'],
       includeStock: parsedApp['include-stock'],
       enableUpdateChecks: parsedApp['enable-update-checks'],
