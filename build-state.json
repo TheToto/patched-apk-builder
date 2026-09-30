@@ -51,15 +51,15 @@
     },
     "protonvpn:arm64-v8a": {
       "version": "5.19.43.0",
-      "patchesTag": "v1.45.0",
-      "cliTag": "v1.17.0",
-      "fingerprint": "77e0a92f49d07cae57895ecbf76c14d08d93d85ea7e08fb7a13b65da7320df44",
+      "patchesTag": "v1.46.0",
+      "cliTag": "v1.18.0",
+      "fingerprint": "4a2d26ff977a2780d036e64b334a46f69f14235516b121c2abf5c01e59ee3326",
       "buildMode": "apk",
       "artifacts": {
-        "apk": "protonvpn-hoo-dles-v5.19.43.0-p1.45.0-arm64-v8a.apk"
+        "apk": "protonvpn-hoo-dles-v5.19.43.0-p1.46.0-arm64-v8a.apk"
       },
       "arch": "arm64-v8a",
-      "updatedAt": "2026-09-29T11:58:53.901Z"
+      "updatedAt": "2026-09-30T20:28:57.154Z"
     },
     "gboard:arm64-v8a": {
       "version": "18.0.3.954559732-release-arm64-v8a",
@@ -86,5 +86,5 @@
       "updatedAt": "2026-09-29T12:19:50.866Z"
     }
   },
-  "lastVersionCode": 102
+  "lastVersionCode": 103
 }
