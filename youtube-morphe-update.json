@@ -1,6 +1,6 @@
 {
-  "version": "v20.45.36 (patches 1.23.0.mpp)",
-  "versionCode": 2,
-  "zipUrl": "https://github.com/TheToto/revanced-magisk-module/releases/download/2/youtube-morphe-module-v20.45.36-all.zip",
-  "changelog": "https://raw.githubusercontent.com/TheToto/revanced-magisk-module/update/build.md"
+  "version": "v21.39.522 (p1.45.0)",
+  "versionCode": 105,
+  "zipUrl": "https://apk.thetoto.fr/releases/download/105/youtube-experimental-morphe-module-v21.39.522-p1.45.0-all.zip",
+  "changelog": "https://raw.githubusercontent.com/TheToto/patched-apk-builder/update/build.md"
 }

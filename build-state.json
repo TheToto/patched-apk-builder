@@ -84,7 +84,20 @@
       },
       "arch": "arm64-v8a",
       "updatedAt": "2026-10-01T20:45:30.221Z"
+    },
+    "youtube-experimental:all": {
+      "version": "21.39.522",
+      "patchesTag": "v1.45.0",
+      "cliTag": "v1.18.0",
+      "fingerprint": "23339e02eb6db7a5b9c47b4e7618a219868d0614180aa6a0c54c93c957f4af0c",
+      "buildMode": "both",
+      "artifacts": {
+        "apk": "youtube-experimental-morphe-v21.39.522-p1.45.0-all.apk",
+        "module": "youtube-experimental-morphe-module-v21.39.522-p1.45.0-all.zip"
+      },
+      "arch": "all",
+      "updatedAt": "2026-10-02T20:20:14.663Z"
     }
   },
-  "lastVersionCode": 104
+  "lastVersionCode": 105
 }

@@ -1,6 +1,6 @@
 {
-  "version": "v21.16.256-p1.44.0",
-  "versionCode": 97,
-  "zipUrl": "https://github.com/TheToto/revanced-apk-builder/releases/download/97/youtube-morphe-module-v21.16.256-p1.44.0-all.zip",
-  "changelog": "https://raw.githubusercontent.com/TheToto/revanced-apk-builder/update/build.md"
+  "version": "v21.39.522 (p1.45.0)",
+  "versionCode": 105,
+  "zipUrl": "https://apk.thetoto.fr/releases/download/105/youtube-experimental-morphe-module-v21.39.522-p1.45.0-all.zip",
+  "changelog": "https://raw.githubusercontent.com/TheToto/patched-apk-builder/update/build.md"
 }
