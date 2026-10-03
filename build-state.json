@@ -97,7 +97,20 @@
       },
       "arch": "all",
       "updatedAt": "2026-10-02T20:20:14.663Z"
+    },
+    "reddit:all": {
+      "version": "2026.24.0",
+      "patchesTag": "v1.45.0",
+      "cliTag": "v1.18.0",
+      "fingerprint": "11c61917478df81f163b0710c4e3ea28a48184560623bbc1001d938961cfaea0",
+      "buildMode": "both",
+      "artifacts": {
+        "apk": "reddit-morphe-v2026.24.0-p1.45.0-all.apk",
+        "module": "reddit-morphe-module-v2026.24.0-p1.45.0-all.zip"
+      },
+      "arch": "all",
+      "updatedAt": "2026-10-03T18:59:40.096Z"
     }
   },
-  "lastVersionCode": 105
+  "lastVersionCode": 106
 }
