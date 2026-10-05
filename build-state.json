@@ -88,15 +88,15 @@
     "youtube-experimental:all": {
       "version": "21.39.522",
       "patchesTag": "v1.45.0",
-      "cliTag": "v1.18.0",
-      "fingerprint": "23339e02eb6db7a5b9c47b4e7618a219868d0614180aa6a0c54c93c957f4af0c",
+      "cliTag": "v1.18.1",
+      "fingerprint": "e05d16e4cba45b0e3b9ce129269920bcd355fd25f1fc08c24ba22549d4f3fa1b",
       "buildMode": "both",
       "artifacts": {
         "apk": "youtube-experimental-morphe-v21.39.522-p1.45.0-all.apk",
         "module": "youtube-experimental-morphe-module-v21.39.522-p1.45.0-all.zip"
       },
       "arch": "all",
-      "updatedAt": "2026-10-02T20:20:14.663Z"
+      "updatedAt": "2026-10-05T22:20:44.386Z"
     },
     "reddit:all": {
       "version": "2026.24.0",
@@ -112,5 +112,5 @@
       "updatedAt": "2026-10-03T18:59:40.096Z"
     }
   },
-  "lastVersionCode": 107
+  "lastVersionCode": 108
 }
