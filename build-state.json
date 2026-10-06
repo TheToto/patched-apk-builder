@@ -86,17 +86,17 @@
       "updatedAt": "2026-10-01T20:45:30.221Z"
     },
     "youtube-experimental:all": {
-      "version": "21.39.522",
-      "patchesTag": "v1.45.0",
+      "version": "21.40.161",
+      "patchesTag": "v1.46.0",
       "cliTag": "v1.18.1",
-      "fingerprint": "e05d16e4cba45b0e3b9ce129269920bcd355fd25f1fc08c24ba22549d4f3fa1b",
+      "fingerprint": "6c0fcbb03f67108f35004bfd52cce8803699d520c4c8f10a9656ed55be4225ec",
       "buildMode": "both",
       "artifacts": {
-        "apk": "youtube-experimental-morphe-v21.39.522-p1.45.0-all.apk",
-        "module": "youtube-experimental-morphe-module-v21.39.522-p1.45.0-all.zip"
+        "apk": "youtube-experimental-morphe-v21.40.161-p1.46.0-all.apk",
+        "module": "youtube-experimental-morphe-module-v21.40.161-p1.46.0-all.zip"
       },
       "arch": "all",
-      "updatedAt": "2026-10-05T22:20:44.386Z"
+      "updatedAt": "2026-10-06T20:46:28.171Z"
     },
     "reddit:all": {
       "version": "2026.24.0",
@@ -110,7 +110,33 @@
       },
       "arch": "all",
       "updatedAt": "2026-10-03T18:59:40.096Z"
+    },
+    "music:arm-v7a": {
+      "version": "9.20.53",
+      "patchesTag": "v1.46.0",
+      "cliTag": "v1.18.1",
+      "fingerprint": "d1b72965c86c884f3bb3f903f451f196b8e2e524aa9c9b5471bad687fdf3b8fe",
+      "buildMode": "both",
+      "artifacts": {
+        "apk": "music-morphe-v9.20.53-p1.46.0-arm-v7a.apk",
+        "module": "music-morphe-module-v9.20.53-p1.46.0-arm-v7a.zip"
+      },
+      "arch": "arm-v7a",
+      "updatedAt": "2026-10-06T20:45:49.843Z"
+    },
+    "music:arm64-v8a": {
+      "version": "9.20.53",
+      "patchesTag": "v1.46.0",
+      "cliTag": "v1.18.1",
+      "fingerprint": "6cbd6b2bbc985c96fa0ef6b4f17b925264f1bb3399aca5228cffe4ae44f2a5b7",
+      "buildMode": "both",
+      "artifacts": {
+        "apk": "music-morphe-v9.20.53-p1.46.0-arm64-v8a.apk",
+        "module": "music-morphe-module-v9.20.53-p1.46.0-arm64-v8a.zip"
+      },
+      "arch": "arm64-v8a",
+      "updatedAt": "2026-10-06T20:45:29.904Z"
     }
   },
-  "lastVersionCode": 108
+  "lastVersionCode": 109
 }
