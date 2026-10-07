@@ -266,7 +266,7 @@ export class BuildOrchestrator {
       cliTag
     );
 
-    this.stateManager.recordAppBuild(app.slug, arch, {
+    const entryData = {
       version: targetVersion,
       patchesTag: patchRelease.tag,
       cliTag,
@@ -276,9 +276,29 @@ export class BuildOrchestrator {
         apk: finalApkPath ? path.basename(finalApkPath) : undefined,
         module: finalModulePath ? path.basename(finalModulePath) : undefined
       }
-    });
+    };
 
+    this.stateManager.recordAppBuild(app.slug, arch, entryData);
     this.stateManager.save();
+
+    // Export individual state entry for isolated CI matrix consolidation
+    const singleStateFile = path.join(this.ctx.buildDir, `state-${app.slug}-${arch}.json`);
+    fs.writeFileSync(
+      singleStateFile,
+      JSON.stringify(
+        {
+          key: `${app.slug}:${arch}`,
+          entry: {
+            ...entryData,
+            arch,
+            updatedAt: new Date().toISOString()
+          }
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
   }
 
   private inferPkgName(app: AppConfig): string {

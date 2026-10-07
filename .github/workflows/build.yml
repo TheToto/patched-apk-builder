@@ -91,6 +91,7 @@ jobs:
             build/*.zip
             build/*.patches.json
             build/*.png
+            build/state-*.json
             build-state.json
             build.md
 
@@ -148,6 +149,7 @@ jobs:
             build/*.zip
             build/*.patches.json
             build/*.png
+            build/state-*.json
             build-state.json
             build.md
 
@@ -195,14 +197,24 @@ jobs:
           function walk(dir) {
             for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
               const p = dir + '/' + f.name;
-              if (f.isDirectory()) walk(p);
-              else if (f.name === 'build-state.json') {
+              if (f.isDirectory()) {
+                walk(p);
+              } else if (f.name.startsWith('state-') && f.name.endsWith('.json')) {
+                // Isolated state entry written specifically by this build job
+                try {
+                  const s = JSON.parse(fs.readFileSync(p));
+                  if (s.key && s.entry) {
+                    merged.apps[s.key] = s.entry;
+                  }
+                } catch (e) {
+                  console.error('Error merging isolated state ' + p + ':', e);
+                }
+              } else if (f.name === 'build-state.json') {
                 try {
                   const s = JSON.parse(fs.readFileSync(p));
                   for (const [k, v] of Object.entries(s.apps || {})) {
                     const ex = merged.apps[k];
                     // Only update if key doesn't exist, has no timestamp, or incoming entry has a strictly newer timestamp.
-                    // This prevents parallel matrix jobs from overwriting each other with stale snapshots.
                     if (!ex || !ex.updatedAt || (v.updatedAt && new Date(v.updatedAt) > new Date(ex.updatedAt))) {
                       merged.apps[k] = v;
                     }
