@@ -52,38 +52,38 @@
     "protonvpn:arm64-v8a": {
       "version": "5.20.57.0",
       "patchesTag": "v1.47.0",
-      "cliTag": "v1.18.0",
-      "fingerprint": "ce5cdc09a3738981210d40b3db0a2785c8cfd40c3c7424e00aee72f617441c3d",
+      "cliTag": "v1.18.1",
+      "fingerprint": "eb0507fc76decfdb11965a5f9e7ecf75e6322ddb6259304a2a880b1865b81ef3",
       "buildMode": "apk",
       "artifacts": {
         "apk": "protonvpn-hoo-dles-v5.20.57.0-p1.47.0-arm64-v8a.apk"
       },
       "arch": "arm64-v8a",
-      "updatedAt": "2026-10-04T18:58:13.363Z"
+      "updatedAt": "2026-10-07T11:53:20.103Z"
     },
     "gboard:arm64-v8a": {
       "version": "18.0.3.954559732-release-arm64-v8a",
-      "patchesTag": "v3.11.0",
-      "cliTag": "v1.17.0",
-      "fingerprint": "571bae69007dd84fa7257c1757665a22e4b77b31f9db99d624627b35d7ff0472",
+      "patchesTag": "v3.12.0",
+      "cliTag": "v1.18.1",
+      "fingerprint": "bcdcca98b60262dd87f59793630603eb8a9196db78c40d219c67500db0c42726",
       "buildMode": "apk",
       "artifacts": {
-        "apk": "gboard-jasonwu1994-v18.0.3.954559732-p3.11.0-arm64-v8a.apk"
+        "apk": "gboard-jasonwu1994-v18.0.3.954559732-p3.12.0-arm64-v8a.apk"
       },
       "arch": "arm64-v8a",
-      "updatedAt": "2026-09-29T11:59:10.476Z"
+      "updatedAt": "2026-10-07T11:53:20.102Z"
     },
     "niagaralauncher:arm64-v8a": {
-      "version": "1.16.24",
-      "patchesTag": "v1.46.0",
-      "cliTag": "v1.18.0",
-      "fingerprint": "7b4a34eb2f63f719b045a187bfe11a1a76ace51e197cd01d067839c8b5edc667",
+      "version": "1.16.31",
+      "patchesTag": "v1.47.0",
+      "cliTag": "v1.18.1",
+      "fingerprint": "36b6ca9aa125b7eda75a9215070a39b512516e868cecc1d93febabe6f67cb35b",
       "buildMode": "apk",
       "artifacts": {
-        "apk": "niagaralauncher-hoo-dles-v1.16.24-p1.46.0-arm64-v8a.apk"
+        "apk": "niagaralauncher-hoo-dles-v1.16.31-p1.47.0-arm64-v8a.apk"
       },
       "arch": "arm64-v8a",
-      "updatedAt": "2026-10-01T20:45:30.221Z"
+      "updatedAt": "2026-10-07T11:53:20.103Z"
     },
     "youtube-experimental:all": {
       "version": "21.40.161",
@@ -100,16 +100,16 @@
     },
     "reddit:all": {
       "version": "2026.24.0",
-      "patchesTag": "v1.45.0",
-      "cliTag": "v1.18.0",
-      "fingerprint": "11c61917478df81f163b0710c4e3ea28a48184560623bbc1001d938961cfaea0",
+      "patchesTag": "v1.46.0",
+      "cliTag": "v1.18.1",
+      "fingerprint": "52537fd7ae4bbfb42d363dc058b387aa4b63969ea5d1fb17dbeea64329f6beda",
       "buildMode": "both",
       "artifacts": {
-        "apk": "reddit-morphe-v2026.24.0-p1.45.0-all.apk",
-        "module": "reddit-morphe-module-v2026.24.0-p1.45.0-all.zip"
+        "apk": "reddit-morphe-v2026.24.0-p1.46.0-all.apk",
+        "module": "reddit-morphe-module-v2026.24.0-p1.46.0-all.zip"
       },
       "arch": "all",
-      "updatedAt": "2026-10-03T18:59:40.096Z"
+      "updatedAt": "2026-10-07T11:53:20.103Z"
     },
     "music:arm-v7a": {
       "version": "9.20.53",
@@ -138,5 +138,6 @@
       "updatedAt": "2026-10-06T20:45:29.904Z"
     }
   },
-  "lastVersionCode": 109
+  "lastVersionCode": 1,
+  "updatedAt": "2026-10-07T11:53:20.103Z"
 }
