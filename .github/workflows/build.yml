@@ -174,6 +174,11 @@ jobs:
           npm ci
           npm run build
 
+      - name: Retrieve State from Update Branch
+        run: |
+          git checkout origin/update -- build-state.json 2>/dev/null || true
+          git checkout origin/update -- build.md 2>/dev/null || true
+
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -186,6 +191,7 @@ jobs:
           node -e "
           const fs = require('fs');
           let merged = fs.existsSync('build-state.json') ? JSON.parse(fs.readFileSync('build-state.json')) : { apps: {}, lastVersionCode: 0 };
+          if (!merged.apps) merged.apps = {};
           function walk(dir) {
             for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
               const p = dir + '/' + f.name;
@@ -193,16 +199,38 @@ jobs:
               else if (f.name === 'build-state.json') {
                 try {
                   const s = JSON.parse(fs.readFileSync(p));
-                  merged.apps = { ...merged.apps, ...s.apps };
+                  for (const [k, v] of Object.entries(s.apps || {})) {
+                    const ex = merged.apps[k];
+                    // Only update if key doesn't exist, has no timestamp, or incoming entry has a strictly newer timestamp.
+                    // This prevents parallel matrix jobs from overwriting each other with stale snapshots.
+                    if (!ex || !ex.updatedAt || (v.updatedAt && new Date(v.updatedAt) > new Date(ex.updatedAt))) {
+                      merged.apps[k] = v;
+                    }
+                  }
                   if (s.lastVersionCode > merged.lastVersionCode) merged.lastVersionCode = s.lastVersionCode;
-                } catch {}
+                } catch (e) {
+                  console.error('Error merging state from ' + p + ':', e);
+                }
               }
             }
           }
           if (fs.existsSync('downloaded-artifacts')) walk('downloaded-artifacts');
           fs.writeFileSync('build-state.json', JSON.stringify(merged, null, 2));
+
+          // Generate consolidated build.md from all up-to-date apps
+          let md = '';
+          const tagsSeen = new Set();
+          for (const [key, app] of Object.entries(merged.apps)) {
+            const slug = key.split(':')[0];
+            md += slug + ': ' + app.version + '  \n';
+            if (app.patchesTag) tagsSeen.add(app.patchesTag);
+          }
+          md += '\nInstall [Microg](https://github.com/MorpheApp/MicroG-RE/) for non-root YouTube and YT Music APKs  \n';
+          md += 'Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store  \n\n';
+          md += '[revanced-magisk-module](https://github.com/' + (process.env.GITHUB_REPOSITORY || 'TheToto/patched-apk-builder') + ')  \n\n';
+          for (const t of tagsSeen) md += 'Patches: ' + t + '  \n';
+          fs.writeFileSync('build.md', md, 'utf-8');
           "
-          find downloaded-artifacts -type f -name "build.md" -exec cp -f {} . \;
           cp -f build-state.json /tmp/build-state.json 2>/dev/null || true
           cp -f build.md /tmp/build.md 2>/dev/null || true
           ls -la build/
