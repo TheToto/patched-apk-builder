@@ -136,8 +136,21 @@
       },
       "arch": "arm64-v8a",
       "updatedAt": "2026-10-06T20:45:29.904Z"
+    },
+    "youtube:all": {
+      "version": "21.16.256",
+      "patchesTag": "v1.46.0",
+      "cliTag": "v1.18.1",
+      "fingerprint": "8bdb679239a16456e34bb2fa99229e83f5f0336ead7eff904b125ae441d335c1",
+      "buildMode": "both",
+      "artifacts": {
+        "apk": "youtube-morphe-v21.16.256-p1.46.0-all.apk",
+        "module": "youtube-morphe-module-v21.16.256-p1.46.0-all.zip"
+      },
+      "arch": "all",
+      "updatedAt": "2026-10-09T07:37:09.963Z"
     }
   },
-  "lastVersionCode": 1,
+  "lastVersionCode": 110,
   "updatedAt": "2026-10-07T11:53:20.103Z"
 }
