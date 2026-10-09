@@ -151,7 +151,7 @@ ${appCardsHtml}        </div>
 
     // 2. Generate per-app detail pages (exact layout from Python scripts/gen_app_pages.py)
     for (const app of activeApps) {
-      await this.generateAppPage(app, baseUrl, outDir, qrSvg, owner, repoName);
+      await this.generateAppPage(app, baseUrl, outDir, qrSvg, owner, repoName, activeApps);
     }
 
     this.ctx.success(`Generated website successfully in ${outDir}`);
@@ -163,7 +163,8 @@ ${appCardsHtml}        </div>
     outDir: string,
     qrSvg: string,
     owner: string,
-    repoName: string
+    repoName: string,
+    allApps: AppConfig[] = []
   ): Promise<void> {
     const htmlFilename = `${app.slug}.html`;
     const pageUrl = `${baseUrl}/${htmlFilename}`;
@@ -172,34 +173,44 @@ ${appCardsHtml}        </div>
 
     const appSlug = app.slug.toLowerCase().replace(/\s+/g, '-');
     const brandSlug = app.rvBrand.toLowerCase().replace(/\s+/g, '-');
+    const nameSlug = app.name.toLowerCase().replace(/\s+/g, '-');
     const appDisplayName = app.name;
 
     const buildFiles = fs.existsSync(this.ctx.buildDir) ? fs.readdirSync(this.ctx.buildDir) : [];
 
-    // Find APKs:
-    // Match standardized: appslug-patchname-version-patchversion-arch.apk
-    // Or legacy: appname-brand-v...apk
-    const matchedApks = buildFiles.filter((f) => {
-      if (!f.endsWith('.apk') || f.includes('-module-')) return false;
-      const lower = f.toLowerCase();
-      return (
-        lower.startsWith(`${appSlug}-${brandSlug}-`) ||
-        lower.startsWith(`${appSlug}-`) ||
-        lower.startsWith(`${app.name.toLowerCase().replace(/\s+/g, '-')}-${brandSlug}-`)
-      );
-    });
+    const isFileForApp = (filename: string, isModule: boolean): boolean => {
+      const lower = filename.toLowerCase();
 
-    // Find Module ZIPs:
-    const matchedModules = buildFiles.filter((f) => {
-      if (!f.endsWith('.zip')) return false;
-      const lower = f.toLowerCase();
-      return (
-        (lower.startsWith(`${appSlug}-${brandSlug}-module-`) ||
-          lower.startsWith(`${appSlug}-`) ||
-          lower.startsWith(`${app.name.toLowerCase().replace(/\s+/g, '-')}-`)) &&
-        lower.includes('module')
-      );
-    });
+      // Ensure it does not belong to a more specific application slug (e.g. youtube-experimental vs youtube)
+      const hasBetterMatch = allApps.some((other) => {
+        if (other.slug === app.slug) return false;
+        const otherSlug = other.slug.toLowerCase().replace(/\s+/g, '-');
+        return otherSlug.length > appSlug.length && lower.startsWith(`${otherSlug}-`);
+      });
+      if (hasBetterMatch) return false;
+
+      if (isModule) {
+        if (!lower.endsWith('.zip') || !lower.includes('module')) return false;
+        return (
+          lower.startsWith(`${appSlug}-${brandSlug}-module-`) ||
+          lower.startsWith(`${nameSlug}-${brandSlug}-module-`) ||
+          (lower.startsWith(`${appSlug}-`) && lower.includes('-module-'))
+        );
+      } else {
+        if (!lower.endsWith('.apk') || lower.includes('-module-')) return false;
+        return (
+          lower.startsWith(`${appSlug}-${brandSlug}-`) ||
+          lower.startsWith(`${nameSlug}-${brandSlug}-`) ||
+          lower.startsWith(`${appSlug}-`)
+        );
+      }
+    };
+
+    // Find APKs
+    const matchedApks = buildFiles.filter((f) => isFileForApp(f, false));
+
+    // Find Module ZIPs
+    const matchedModules = buildFiles.filter((f) => isFileForApp(f, true));
 
     // Sort descending by version
     matchedApks.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
@@ -459,10 +470,16 @@ ${appCardsHtml}        </div>
     const patchesJsonFiles = buildFiles.filter((f) => {
       if (!f.endsWith('.patches.json')) return false;
       const lower = f.toLowerCase();
+      const hasBetterMatch = allApps.some((other) => {
+        if (other.slug === app.slug) return false;
+        const otherSlug = other.slug.toLowerCase().replace(/\s+/g, '-');
+        return otherSlug.length > appSlug.length && lower.startsWith(`${otherSlug}-`);
+      });
+      if (hasBetterMatch) return false;
       return (
         lower.startsWith(`${appSlug}-${brandSlug}-`) ||
-        lower.startsWith(`${appSlug}-`) ||
-        lower.startsWith(`${app.name.toLowerCase().replace(/\s+/g, '-')}-${brandSlug}-`)
+        lower.startsWith(`${nameSlug}-${brandSlug}-`) ||
+        lower.startsWith(`${appSlug}-`)
       );
     });
 

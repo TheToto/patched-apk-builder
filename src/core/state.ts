@@ -97,9 +97,8 @@ export class StateManager {
     if (previous.fingerprint && previous.fingerprint === newFingerprint) {
       return false;
     }
-    // Fallback if previous had no fingerprint (e.g. imported from build.md)
-    if (!previous.fingerprint && previous.version === targetVersion) {
-      return false;
+    if (!previous.fingerprint) {
+      return true;
     }
     return true;
   }
