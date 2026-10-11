@@ -10,7 +10,7 @@ youtube-experimental: 21.40.161
 reddit: 2026.24.0  
 music: 9.20.53  
 music: 9.20.53  
-youtube: 21.16.256  
+youtube: 21.20.405  
 
 Install [Microg](https://github.com/MorpheApp/MicroG-RE/) for non-root YouTube and YT Music APKs  
 Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store  
@@ -20,4 +20,3 @@ Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and
 Patches: 22-1.21  
 Patches: v1.47.0  
 Patches: v3.12.0  
-Patches: v1.46.0  
