@@ -6,7 +6,7 @@ facebook: latest
 protonvpn: 5.20.57.0  
 gboard: 18.0.3.954559732-release-arm64-v8a  
 niagaralauncher: 1.16.31  
-youtube-experimental: 21.40.161  
+youtube-experimental: 21.42.241  
 reddit: 2026.24.0  
 music: 9.20.53  
 music: 9.20.53  
