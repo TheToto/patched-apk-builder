@@ -6,11 +6,11 @@ facebook: latest
 protonvpn: 5.20.57.0  
 gboard: 18.0.3.954559732-release-arm64-v8a  
 niagaralauncher: 1.16.31  
-youtube-experimental: 21.42.241  
-reddit: 2026.24.0  
-music: 9.20.53  
-music: 9.20.53  
-youtube: 21.20.405  
+youtube-experimental: 21.43.523  
+reddit: 2026.40.0  
+music: 9.30.53  
+music: 9.30.53  
+youtube: 21.30.216  
 
 Install [Microg](https://github.com/MorpheApp/MicroG-RE/) for non-root YouTube and YT Music APKs  
 Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store  
@@ -20,4 +20,4 @@ Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and
 Patches: 22-1.21  
 Patches: v1.47.0  
 Patches: v3.12.0  
-Patches: v1.48.0  
+Patches: v2.0.0  
