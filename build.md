@@ -4,7 +4,7 @@ youtube: 21.16.256
 youtube-experimental: 21.38.123  
 facebook: latest  
 protonvpn: 5.20.57.0  
-gboard: 18.0.3.954559732-release-arm64-v8a  
+gboard: 18.5.4.993608717-release-arm64-v8a  
 niagaralauncher: 1.16.31  
 youtube-experimental: 21.43.523  
 reddit: 2026.40.0  
@@ -17,7 +17,7 @@ Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and
 
 [revanced-magisk-module](https://github.com/TheToto/patched-apk-builder)  
 
-Patches: 22-1.21  
+Patches: 25-1.24  
 Patches: v1.47.0  
-Patches: v3.12.0  
+Patches: v4.1.1  
 Patches: v2.0.0  
