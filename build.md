@@ -19,5 +19,5 @@ Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and
 
 Patches: 25-1.24  
 Patches: v1.47.0  
-Patches: v4.1.1  
+Patches: v4.2.0  
 Patches: v2.0.0  
