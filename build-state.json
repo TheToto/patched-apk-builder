@@ -38,16 +38,16 @@
     },
     "facebook:arm64-v8a": {
       "version": "latest",
-      "patchesTag": "25-1.24",
+      "patchesTag": "27-1.26",
       "cliTag": "lspatch",
-      "fingerprint": "ea56210ac289201caecc989923c2fb128a4b37a47913ce55b696ab8f16c1c859",
+      "fingerprint": "5543425bb3a703946d91e7532de8afb08bfce01c5dc8633758d53c26b311af95",
       "buildMode": "both",
       "artifacts": {
         "apk": "facebook-fbar-vlatest-lsp-arm64-v8a.apk",
         "module": "facebook-fbar-module-vlatest-lsp-arm64-v8a.zip"
       },
       "arch": "arm64-v8a",
-      "updatedAt": "2026-11-02T23:18:18.372Z"
+      "updatedAt": "2026-11-18T22:50:36.017Z"
     },
     "protonvpn:arm64-v8a": {
       "version": "5.20.57.0",
@@ -63,15 +63,15 @@
     },
     "gboard:arm64-v8a": {
       "version": "18.5.4.993608717-release-arm64-v8a",
-      "patchesTag": "v4.2.0",
-      "cliTag": "v2.0.0",
-      "fingerprint": "976f7711846f57b094eae3851f9f4addfa342eae520ca1dbead60a79cb67de6f",
+      "patchesTag": "v4.3.0",
+      "cliTag": "v2.2.0",
+      "fingerprint": "e804db3ace56b42d5baf63b8ddfae454173af07076154e9c4874d598ce6b8a30",
       "buildMode": "apk",
       "artifacts": {
-        "apk": "gboard-jasonwu1994-v18.5.4.993608717-p4.2.0-arm64-v8a.apk"
+        "apk": "gboard-jasonwu1994-v18.5.4.993608717-p4.3.0-arm64-v8a.apk"
       },
       "arch": "arm64-v8a",
-      "updatedAt": "2026-11-04T21:42:04.649Z"
+      "updatedAt": "2026-11-18T22:50:49.955Z"
     },
     "niagaralauncher:arm64-v8a": {
       "version": "1.16.31",
@@ -86,71 +86,71 @@
       "updatedAt": "2026-11-04T21:41:20.362Z"
     },
     "youtube-experimental:all": {
-      "version": "21.43.523",
-      "patchesTag": "v2.0.0",
-      "cliTag": "v2.0.0",
-      "fingerprint": "21378989d6d9306cb6233ecab913b9f59352d0ea83f0e9e43f46af4528612b2d",
+      "version": "21.45.82",
+      "patchesTag": "v2.3.0",
+      "cliTag": "v2.2.0",
+      "fingerprint": "2d40b7ca2a0b69a0013bb07c8d06d8dfda48c255cf87b78eee470856cf90a557",
       "buildMode": "both",
       "artifacts": {
-        "apk": "youtube-experimental-morphe-v21.43.523-p2.0.0-all.apk",
-        "module": "youtube-experimental-morphe-module-v21.43.523-p2.0.0-all.zip"
+        "apk": "youtube-experimental-morphe-v21.45.82-p2.3.0-all.apk",
+        "module": "youtube-experimental-morphe-module-v21.45.82-p2.3.0-all.zip"
       },
       "arch": "all",
-      "updatedAt": "2026-11-04T21:52:20.508Z"
+      "updatedAt": "2026-11-18T22:52:58.248Z"
     },
     "reddit:all": {
       "version": "2026.40.0",
-      "patchesTag": "v2.0.0",
-      "cliTag": "v2.0.0",
-      "fingerprint": "fccf1a27dfb4b3d98569f5b7f7a9e597b2c81e03081043d9be609699867bb087",
+      "patchesTag": "v2.3.0",
+      "cliTag": "v2.2.0",
+      "fingerprint": "344c3c7d13b078f380a8feb0f3bf02a052fb67d28319b7b86b7a4d59280f22b4",
       "buildMode": "both",
       "artifacts": {
-        "apk": "reddit-morphe-v2026.40.0-p2.0.0-all.apk",
-        "module": "reddit-morphe-module-v2026.40.0-p2.0.0-all.zip"
+        "apk": "reddit-morphe-v2026.40.0-p2.3.0-all.apk",
+        "module": "reddit-morphe-module-v2026.40.0-p2.3.0-all.zip"
       },
       "arch": "all",
-      "updatedAt": "2026-11-04T21:42:35.375Z"
+      "updatedAt": "2026-11-18T22:51:18.407Z"
     },
     "music:arm-v7a": {
       "version": "9.30.53",
-      "patchesTag": "v2.0.0",
-      "cliTag": "v2.0.0",
-      "fingerprint": "290281e7ff39201d29460a48d9faf4f31a53156bed2828f14dae09dc55049cd2",
+      "patchesTag": "v2.3.0",
+      "cliTag": "v2.2.0",
+      "fingerprint": "6e1129060868e70b977199f2ebc5f6db85b1624d050cf99490567bdb0564bfbd",
       "buildMode": "both",
       "artifacts": {
-        "apk": "music-morphe-v9.30.53-p2.0.0-arm-v7a.apk",
-        "module": "music-morphe-module-v9.30.53-p2.0.0-arm-v7a.zip"
+        "apk": "music-morphe-v9.30.53-p2.3.0-arm-v7a.apk",
+        "module": "music-morphe-module-v9.30.53-p2.3.0-arm-v7a.zip"
       },
       "arch": "arm-v7a",
-      "updatedAt": "2026-11-04T21:44:29.862Z"
+      "updatedAt": "2026-11-18T22:50:33.834Z"
     },
     "music:arm64-v8a": {
       "version": "9.30.53",
-      "patchesTag": "v2.0.0",
-      "cliTag": "v2.0.0",
-      "fingerprint": "d40219fc8a8e769a65c98bb7183eea072cf2f9717a4268ac50cd9a98df86e8c3",
+      "patchesTag": "v2.3.0",
+      "cliTag": "v2.2.0",
+      "fingerprint": "3cde4694bb0d13716b92433d1d7d40add4654aeabce50802285d93ffef1d5a32",
       "buildMode": "both",
       "artifacts": {
-        "apk": "music-morphe-v9.30.53-p2.0.0-arm64-v8a.apk",
-        "module": "music-morphe-module-v9.30.53-p2.0.0-arm64-v8a.zip"
+        "apk": "music-morphe-v9.30.53-p2.3.0-arm64-v8a.apk",
+        "module": "music-morphe-module-v9.30.53-p2.3.0-arm64-v8a.zip"
       },
       "arch": "arm64-v8a",
-      "updatedAt": "2026-11-04T21:41:40.302Z"
+      "updatedAt": "2026-11-18T22:50:40.427Z"
     },
     "youtube:all": {
       "version": "21.30.216",
-      "patchesTag": "v2.0.0",
-      "cliTag": "v2.0.0",
-      "fingerprint": "1ee65778e40a28f4a6d3d8f4a7fdabea06bd0c10f1f24c2703365e0f3af95e97",
+      "patchesTag": "v2.3.0",
+      "cliTag": "v2.2.0",
+      "fingerprint": "3410cdabd60af4ff61cfdfd85ebbdafb464e5abe7639c1b5196799cc706245d0",
       "buildMode": "both",
       "artifacts": {
-        "apk": "youtube-morphe-v21.30.216-p2.0.0-all.apk",
-        "module": "youtube-morphe-module-v21.30.216-p2.0.0-all.zip"
+        "apk": "youtube-morphe-v21.30.216-p2.3.0-all.apk",
+        "module": "youtube-morphe-module-v21.30.216-p2.3.0-all.zip"
       },
       "arch": "all",
-      "updatedAt": "2026-11-04T21:42:12.388Z"
+      "updatedAt": "2026-11-18T23:11:11.591Z"
     }
   },
-  "lastVersionCode": 117,
+  "lastVersionCode": 118,
   "updatedAt": "2026-10-07T11:53:20.103Z"
 }

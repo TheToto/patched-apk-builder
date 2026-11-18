@@ -1,6 +1,6 @@
 {
-  "version": "v9.30.53 (p2.0.0)",
-  "versionCode": 117,
-  "zipUrl": "https://apk.thetoto.fr/releases/download/117/music-morphe-module-v9.30.53-p2.0.0-arm-v7a.zip",
+  "version": "v9.30.53 (p2.3.0)",
+  "versionCode": 118,
+  "zipUrl": "https://apk.thetoto.fr/releases/download/118/music-morphe-module-v9.30.53-p2.3.0-arm-v7a.zip",
   "changelog": "https://raw.githubusercontent.com/TheToto/patched-apk-builder/update/build.md"
 }
