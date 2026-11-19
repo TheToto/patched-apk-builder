@@ -17,7 +17,7 @@ Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and
 
 [revanced-magisk-module](https://github.com/TheToto/patched-apk-builder)  
 
-Patches: 27-1.26  
+Patches: 28-1.27  
 Patches: v1.47.0  
 Patches: v4.3.0  
 Patches: v2.3.0  
